@@ -1,7 +1,12 @@
 import Stop from "./Stop"
+import StopType from "./StopType"
 
 class StopManager
 {
+
+    private static ALL = [StopType.LIGHT_RAIL, StopType.HEAVY_RAIL, StopType.COMMUTER_RAIL, StopType.BUS, StopType.FERRY].join(",")
+    private static NO_BUS = [StopType.LIGHT_RAIL, StopType.HEAVY_RAIL, StopType.COMMUTER_RAIL, StopType.FERRY].join(",")
+
 
     private old = new Map<string, Stop>()
     private stops = new Map<string, Stop>()
@@ -12,23 +17,26 @@ class StopManager
 
     public async refresh(position: google.maps.LatLng): Promise<void>
     {
+        let zoom = this.map.getZoom()!
+
+        // Stop showing buses when below 16, only show commuter rail below 12
+        let types = (zoom >= 16) ? StopManager.ALL : (zoom >= 12) ? StopManager.NO_BUS : StopType.COMMUTER_RAIL
+        let radius = 1 / (2 ** (zoom - 10))
+
         // Refresh stops
-        let respose = await fetch(`https://api-v3.mbta.com/stops?filter[latitude]=${position.lat()}&filter[longitude]=${position.lng()}&api_key=${process.env.REACT_APP_MBTA_KEY}`)
+        let respose = await fetch(`https://api-v3.mbta.com/stops?filter[latitude]=${position.lat()}&filter[longitude]=${position.lng()}&filter[route_type]=${types}&filter[radius]=${radius}&api_key=${process.env.REACT_APP_MBTA_KEY}`)
         let json = await respose.json()
 
         for (let stop of json.data)
         {
-            let latitude = stop.attributes.latitude as number
-            let longitude = stop.attributes.longitude as number
-
-            this.add(stop.id, latitude, longitude)
+            this.add(stop.id, stop.attributes)
         }
 
         this.clear()
     }
 
 
-    private add(id: string, latitude: number, longitude: number): void
+    private add(id: string, data: any): void
     {
         let stop: Stop
 
@@ -40,8 +48,14 @@ class StopManager
         }
         else
         {
+            let name = data.name as string
+            let type = data.vehicle_type as StopType
+
+            let latitude = data.latitude as number
+            let longitude = data.longitude as number
+
             // Create new stop
-            stop = new Stop(this.map, latitude, longitude)
+            stop = new Stop(this.map, name, type, latitude, longitude)
         }
 
         this.stops.set(id, stop)

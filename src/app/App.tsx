@@ -25,11 +25,12 @@ class App extends React.Component
         // Create map
         this.map = new google.maps.Map(this.div.current!, {
             center: this.position,
-            zoom: 15
+            zoom: 16
         })
         this.stops = new StopManager(this.map)
 
         this.map.addListener("center_changed", this.centerChanged.bind(this))
+        this.map.addListener("zoom_changed", this.zoomChanged.bind(this))
 
         // Get current location of user
         navigator.geolocation.getCurrentPosition(this.initializeMap.bind(this), this.initializeDefault.bind(this))
@@ -53,18 +54,26 @@ class App extends React.Component
 
     private position!: google.maps.LatLng
 
-    private async centerChanged(): Promise<void>
+    private centerChanged(): void
     {
         let center = this.map.getCenter()!
         let distance = google.maps.geometry.spherical.computeDistanceBetween(center, this.position)
 
         // Refresh once user has moved far enough
-        if (distance > 500)
+        let zoom = this.map.getZoom()!
+        let threshold = 8000 / zoom
+
+        if (distance > threshold)
         {
-            console.log("refresh!")
             this.position = center
             this.stops.refresh(center)
         }
+    }
+
+    private zoomChanged(): void
+    {
+        let center = this.map.getCenter()!
+        this.stops.refresh(center)
     }
 
 
