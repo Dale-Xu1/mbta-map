@@ -1,12 +1,12 @@
 import RouteManager from "../route/RouteManager"
 import Stop from "./Stop"
-import StopType from "./StopType"
+import VehicleType from "./VehicleType"
 
 class StopManager
 {
 
-    private static ALL = [StopType.LIGHT_RAIL, StopType.HEAVY_RAIL, StopType.COMMUTER_RAIL, StopType.BUS, StopType.FERRY].join(",")
-    private static NO_BUS = [StopType.LIGHT_RAIL, StopType.HEAVY_RAIL, StopType.COMMUTER_RAIL, StopType.FERRY].join(",")
+    private static ALL = [VehicleType.LIGHT_RAIL, VehicleType.HEAVY_RAIL, VehicleType.COMMUTER_RAIL, VehicleType.BUS, VehicleType.FERRY].join(",")
+    private static NO_BUS = [VehicleType.LIGHT_RAIL, VehicleType.HEAVY_RAIL, VehicleType.COMMUTER_RAIL, VehicleType.FERRY].join(",")
 
 
     private routes: RouteManager
@@ -26,7 +26,7 @@ class StopManager
         let zoom = this.map.getZoom()!
 
         // Stop showing buses when below 16, only show commuter rail below 11
-        let types = (zoom >= 16) ? StopManager.ALL : (zoom >= 13) ? StopManager.NO_BUS : StopType.COMMUTER_RAIL
+        let types = (zoom >= 16) ? StopManager.ALL : (zoom >= 13) ? StopManager.NO_BUS : VehicleType.COMMUTER_RAIL
         let radius = 1 / (2 ** (zoom - 10))
 
         // Query stops
@@ -56,14 +56,8 @@ class StopManager
         }
         else
         {
-            let name = data.name as string
-            let type = data.vehicle_type as StopType
-
-            let latitude = data.latitude as number
-            let longitude = data.longitude as number
-
             // Create new stop
-            stop = new Stop(this.map, name, type, latitude, longitude)
+            stop = new Stop(this.map, data)
         }
 
         this.stops.set(id, stop)

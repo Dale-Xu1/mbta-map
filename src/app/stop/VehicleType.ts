@@ -1,4 +1,4 @@
-enum StopType
+enum VehicleType
 {
 
     LIGHT_RAIL,
@@ -11,4 +11,4 @@ enum StopType
 
 }
 
-export default StopType
+export default VehicleType

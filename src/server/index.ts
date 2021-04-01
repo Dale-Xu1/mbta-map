@@ -19,7 +19,7 @@ class App
 
 // Initialize environment variables
 dotenv.config()
-let port = process.env.PORT!
+let port = process.env.SERVER_PORT!
 
 new App(port)
 console.log(`Server running on port ${port}`)

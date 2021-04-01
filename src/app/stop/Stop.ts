@@ -1,4 +1,4 @@
-import StopType from "./StopType"
+import VehicleType from "./VehicleType"
 
 class Stop
 {
@@ -6,10 +6,10 @@ class Stop
     private marker: google.maps.Marker
 
 
-    public constructor(map: google.maps.Map, name: string, type: StopType, latitude: number, longitude: number)
+    public constructor(map: google.maps.Map, data: any)
     {
         // Create icon
-        let scale = (type === StopType.BUS) ? 5 : 8
+        let scale = (data.vehicle_type === VehicleType.BUS) ? 5 : 8
 
         let icon: google.maps.Symbol = {
             path: google.maps.SymbolPath.CIRCLE,
@@ -19,11 +19,14 @@ class Stop
 
         // Create marker
         this.marker = new google.maps.Marker({
-            position: { lat: latitude, lng: longitude },
+            position: {
+                lat: data.latitude as number,
+                lng: data.longitude as number
+            },
             icon, map
         })
 
-        // let window = new google.maps.InfoWindow({ content: name })
+        // let window = new google.maps.InfoWindow({ content: data.name })
         // this.marker.addListener("click", () =>
         // {
         //     window.open(map, this.marker)
