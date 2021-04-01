@@ -3,6 +3,8 @@ import dotenv from "dotenv"
 import axios from "axios"
 
 import VehicleType from "./VehicleType"
+import StopData from "./data/StopData"
+import RouteData from "./data/RouteData"
 
 class App
 {
@@ -19,7 +21,6 @@ class App
     public constructor(port: string)
     {
         this.app.use(express.static("build"))
-        this.app.use(express.json())
 
         this.app.get("/stops", this.getStops.bind(this))
         this.app.get("/routes", this.getRoutes.bind(this))
@@ -47,15 +48,30 @@ class App
             "&filter[radius]=" + radius +
             "&api_key=" + process.env.MBTA_KEY
         )
+
+        // Format data
+        let stops: StopData[] = []
+        for (let data of response.data.data)
+        {
+            stops.push(new StopData(data))
+        }
         
-        res.send(response.data.data)
+        res.send({ stops })
     }
 
     private async getRoutes(req: Request, res: Response): Promise<void>
     {
         // Query routes
         let response = await axios.get(App.URL + "/routes?filter[stop]=" + req.query.stops + "&api_key=" + process.env.MBTA_KEY)
-        res.send(response.data.data)
+
+        // Format data
+        let routes: RouteData[] = []
+        for (let data of response.data.data)
+        {
+            routes.push(new RouteData(data))
+        }
+
+        res.send({ routes })
     }
     
     private async getShape(req: Request, res: Response): Promise<void>

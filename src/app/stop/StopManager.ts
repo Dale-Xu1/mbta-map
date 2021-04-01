@@ -2,6 +2,7 @@ import axios from "axios"
 
 import RouteManager from "../route/RouteManager"
 import Stop from "./Stop"
+import StopData from "../../server/data/StopData"
 
 class StopManager
 {
@@ -27,9 +28,9 @@ class StopManager
             "&zoom=" + this.map.getZoom()!
         )
 
-        for (let stop of response.data)
+        for (let data of response.data.stops)
         {
-            this.add(stop.id, stop.attributes)
+            this.add(data)
         }
 
         // Refresh routes
@@ -38,8 +39,9 @@ class StopManager
     }
 
 
-    private add(id: string, data: any): void
+    private add(data: StopData): void
     {
+        let id = data.id
         let stop: Stop
 
         if (this.old.has(id))

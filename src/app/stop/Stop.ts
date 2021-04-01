@@ -1,3 +1,4 @@
+import StopData from "../../server/data/StopData"
 import VehicleType from "../../server/VehicleType"
 
 class Stop
@@ -6,10 +7,10 @@ class Stop
     private marker: google.maps.Marker
 
 
-    public constructor(map: google.maps.Map, data: any)
+    public constructor(map: google.maps.Map, data: StopData)
     {
         // Create icon
-        let scale = (data.vehicle_type === VehicleType.BUS) ? 5 : 8
+        let scale = (data.type === VehicleType.BUS) ? 5 : 8
 
         let icon: google.maps.Symbol = {
             path: google.maps.SymbolPath.CIRCLE,

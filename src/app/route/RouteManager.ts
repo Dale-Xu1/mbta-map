@@ -2,6 +2,7 @@ import axios from "axios"
 
 import Stop from "../stop/Stop"
 import Route from "./Route"
+import RouteData from "../../server/data/RouteData"
 
 class RouteManager
 {
@@ -23,17 +24,18 @@ class RouteManager
 
         // Query routes
         let response = await axios.get("/routes?stops=" + ids.join(","))
-        for (let route of response.data)
+        for (let data of response.data.routes)
         {
-            this.add(route.id, route.attributes)
+            this.add(data)
         }
 
         this.clear()
     }
 
 
-    private add(id: string, data: any): void
+    private add(data: RouteData): void
     {
+        let id = data.id
         let route: Route
 
         if (this.old.has(id))
@@ -45,7 +47,7 @@ class RouteManager
         else
         {
             // Create new route
-            route = new Route(this.map, id, data)
+            route = new Route(this.map, data)
         }
 
         this.routes.set(id, route)
