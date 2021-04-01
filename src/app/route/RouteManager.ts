@@ -1,3 +1,5 @@
+import axios from "axios"
+
 import Stop from "../stop/Stop"
 import Route from "./Route"
 
@@ -20,13 +22,12 @@ class RouteManager
         }
 
         // Query routes
-        let respose = await fetch(`https://api-v3.mbta.com/routes?filter[stop]=${ids.join(",")}&api_key=${process.env.REACT_APP_MBTA_KEY}`)
-        let json = await respose.json()
-
-        for (let route of json.data)
+        let response = await axios.get("/routes?stops=" + ids.join(","))
+        for (let route of response.data)
         {
             this.add(route.id, route.attributes)
         }
+
         this.clear()
     }
 

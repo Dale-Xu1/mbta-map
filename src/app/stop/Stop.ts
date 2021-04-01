@@ -1,4 +1,4 @@
-import VehicleType from "./VehicleType"
+import VehicleType from "../../server/VehicleType"
 
 class Stop
 {
