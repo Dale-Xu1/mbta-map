@@ -4,6 +4,7 @@ class StopData
 {
 
     public id: string
+    public name: string
 
     public longitude: number
     public latitude: number
@@ -14,7 +15,9 @@ class StopData
     public constructor(data: any)
     {
         let attributes = data.attributes
+
         this.id = data.id
+        this.name = attributes.name
 
         this.latitude = attributes.latitude
         this.longitude = attributes.longitude
