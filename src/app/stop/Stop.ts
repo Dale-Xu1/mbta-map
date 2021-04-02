@@ -1,8 +1,11 @@
 import StopData from "../../server/data/StopData"
 import VehicleType from "../../server/VehicleType"
+import App from "../App"
 
 class Stop
 {
+
+    private id: string
 
     private marker: google.maps.Marker
 
@@ -10,6 +13,7 @@ class Stop
     public constructor(map: google.maps.Map, data: StopData)
     {
         // Create icon
+        this.id = data.id
         let scale = (data.type === VehicleType.BUS) ? 5 : 8
 
         let icon: google.maps.Symbol = {
@@ -27,13 +31,15 @@ class Stop
             icon, map
         })
 
-        // let window = new google.maps.InfoWindow({ content: data.name })
-        // this.marker.addListener("click", () =>
-        // {
-        //     window.open(map, this.marker)
-        // })
+        this.marker.addListener("click", this.click.bind(this))
     }
 
+
+    private click(): void
+    {
+        // Show prediction data on sidebar
+        App.getInstance().showSidebar(this.id)
+    }
 
     public remove(): void
     {

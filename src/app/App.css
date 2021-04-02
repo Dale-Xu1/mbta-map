@@ -4,6 +4,25 @@
     box-sizing: border-box;
 }
 
+body {
+    overflow: hidden;
+}
+
+.sidebar {
+    position: absolute;
+    width: 350px;
+    height: 100vh;
+    top: 0;
+    right: 0;
+    background-color: white;
+    transition: 0.5s;
+    transform: translateX(100%);
+}
+
+.shown {
+    transform: translateX(0);
+}
+
 #map {
     height: 100vh;
 }

@@ -5,8 +5,29 @@ import "./App.css"
 
 import StopManager from "./stop/StopManager"
 
-class App extends React.Component
+interface Props { }
+
+interface State
 {
+
+    sidebar: boolean
+
+}
+
+class App extends React.Component<Props, State>
+{
+
+    private static instance: App
+
+    public static getInstance(): App
+    {
+        return App.instance
+    }
+
+
+    public state: State = {
+        sidebar: false
+    }
 
     private map!: google.maps.Map
     private stops!: StopManager
@@ -16,12 +37,14 @@ class App extends React.Component
 
     public async componentDidMount(): Promise<void>
     {
+        App.instance = this
+
         // Load Google Maps API
         let loader = new Loader({ apiKey: process.env.REACT_APP_MAP_KEY!, libraries: ["geometry"] });
         await loader.load()
 
         this.position = new google.maps.LatLng(42.3528392, -71.0706818)
-
+        
         // Create map
         this.map = new google.maps.Map(this.div.current!, {
             center: this.position,
@@ -31,6 +54,8 @@ class App extends React.Component
 
         this.map.addListener("center_changed", this.centerChanged.bind(this))
         this.map.addListener("zoom_changed", this.zoomChanged.bind(this))
+
+        this.map.addListener("click", this.hideSidebar.bind(this))
 
         // Get current location of user
         navigator.geolocation.getCurrentPosition(this.initializeMap.bind(this), this.initializeDefault.bind(this))
@@ -94,10 +119,26 @@ class App extends React.Component
     }
 
 
+    public showSidebar(id: string): void
+    {
+        this.setState({ sidebar: true })
+    }
+
+    private hideSidebar(): void
+    {
+        this.setState({ sidebar: false })
+    }
+
+
     public render(): React.ReactElement
     {
         return (
-            <div id="map" ref={this.div}></div>
+            <div>
+                <div id="map" ref={this.div}></div>
+                <div className={"sidebar" + (this.state.sidebar ? " shown" : "")}>
+                    Hello
+                </div>
+            </div>
         )
     }
 
