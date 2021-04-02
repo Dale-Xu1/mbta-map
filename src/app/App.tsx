@@ -53,6 +53,7 @@ class App extends React.Component
 
 
     private position!: google.maps.LatLng
+    private timeout: NodeJS.Timeout | null = null
 
     private centerChanged(): void
     {
@@ -66,14 +67,30 @@ class App extends React.Component
         if (distance > threshold)
         {
             this.position = center
-            this.stops.refresh(center)
+            this.refresh()
         }
     }
 
     private zoomChanged(): void
     {
-        let center = this.map.getCenter()!
-        this.stops.refresh(center)
+        this.position = this.map.getCenter()!
+        this.refresh()
+    }
+
+    private refresh(): void
+    {
+        // Cancel refresh from calling if another was requested
+        if (this.timeout !== null)
+        {
+            clearTimeout(this.timeout)
+        }
+
+        // Wait before refreshing
+        this.timeout = setTimeout(() =>
+        {
+            this.timeout = null
+            this.stops.refresh(this.position)
+        }, 300)
     }
 
 

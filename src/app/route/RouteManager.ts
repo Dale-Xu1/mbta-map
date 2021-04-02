@@ -10,12 +10,17 @@ class RouteManager
     private old = new Map<string, Route>()
     private routes = new Map<string, Route>()
 
+    private index = 0
+
 
     public constructor(private map: google.maps.Map) { }
 
 
     public async refresh(stops: Map<string, Stop>): Promise<void>
     {
+        this.index++
+        let index = this.index
+
         let ids: string[] = []
         for (let id of stops.keys())
         {
@@ -24,11 +29,15 @@ class RouteManager
 
         // Query routes
         let response = await axios.get("/routes?stops=" + ids.join(","))
+        
+        // If another call occured, discard response
+        if (this.index !== index) return
+        this.index = 0
+
         for (let data of response.data.routes)
         {
             this.add(data)
         }
-
         this.clear()
     }
 

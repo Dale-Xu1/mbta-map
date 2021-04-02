@@ -12,6 +12,8 @@ class StopManager
     private old = new Map<string, Stop>()
     private stops = new Map<string, Stop>()
 
+    private index = 0
+
 
     public constructor(private map: google.maps.Map)
     {
@@ -21,12 +23,19 @@ class StopManager
 
     public async refresh(position: google.maps.LatLng): Promise<void>
     {
+        this.index++
+        let index = this.index
+
         // Query stops
         let response = await axios.get(
             "/stops?latitude=" + position.lat() +
             "&longitude=" + position.lng() +
             "&zoom=" + this.map.getZoom()!
         )
+
+        // If another call occured, discard response
+        if (this.index !== index) return
+        this.index = 0
 
         for (let data of response.data.stops)
         {
