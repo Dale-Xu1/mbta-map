@@ -114,9 +114,15 @@ class App
             "?filter[stop]=" + req.query.stop +
             "&include=route&api_key=" + process.env.MBTA_KEY
         )
+        if (response.data.data.length === 0)
+        {
+            res.send({ predictions: [] })
+            return
+        }
 
         // Format data
         let predictions = new Map<string, PredictionData>()
+
         for (let data of response.data.included)
         {
             predictions.set(data.id, new PredictionData(data))

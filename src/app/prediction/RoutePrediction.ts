@@ -66,13 +66,31 @@ class RoutePrediction
     public getInbound(): number | null
     {
         if (this.inbound.length < 1) return null
-        return this.format(this.inbound[0])
+        let result = this.format(this.inbound[0])
+
+        if (result <= 0)
+        {
+            // Prediction has expired
+            this.inbound.shift()
+            return this.getInbound()
+        }
+
+        return result
     }
 
     public getOutbound(): number | null
     {
         if (this.outbound.length < 1) return null
-        return this.format(this.outbound[0])
+        let result = this.format(this.outbound[0])
+
+        if (result <= 0)
+        {
+            // Prediction has expired
+            this.outbound.shift()
+            return this.getOutbound()
+        }
+
+        return result
     }
 
 

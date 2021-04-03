@@ -11,6 +11,45 @@ interface Props
 class Prediction extends React.Component<Props>
 {
 
+    private static components: Prediction[] = []
+    private static timer: NodeJS.Timeout | null = null
+
+    public static start(): void
+    {
+        // Update values every 15 seconds
+        if (Prediction.timer !== null) clearInterval(Prediction.timer)
+        Prediction.timer = setInterval(Prediction.update, 15000)
+    }
+
+    public static stop(): void
+    {
+        clearInterval(Prediction.timer!)
+        Prediction.timer = null
+    }
+
+    private static update(): void
+    {
+        for (let component of Prediction.components)
+        {
+            // Recalculate times
+            component.forceUpdate()
+        }
+    }
+
+
+    public componentDidMount(): void
+    {
+        // Subscribe to refresh calls
+        Prediction.components.push(this)
+    }
+
+    public componentWillUnmount(): void
+    {
+        // Unsubscribe
+        let components = Prediction.components
+        components.splice(components.indexOf(this), 1)
+    }
+
     public render(): React.ReactElement
     {
         let prediction = this.props.prediction

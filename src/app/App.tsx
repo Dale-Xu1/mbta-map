@@ -47,6 +47,7 @@ class App extends React.Component<Props, State>
 
     public async showSidebar(stop: Stop): Promise<void>
     {
+        Prediction.start()
         this.setState({ sidebar: true, stop })
 
         // Query predictions
@@ -63,7 +64,11 @@ class App extends React.Component<Props, State>
 
     public hideSidebar(): void
     {
-        this.setState({ sidebar: false })
+        if (this.state.sidebar)
+        {
+            Prediction.stop()
+            this.setState({ sidebar: false })
+        }
     }
 
 
