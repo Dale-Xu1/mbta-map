@@ -1,8 +1,11 @@
+import axios from "axios"
 import React from "react"
 
 import "./App.css"
 
-import Map from "./Map"
+import NavigatorMap from "./NavigatorMap"
+import Prediction from "./Prediction"
+import RoutePrediction from "./prediction/RoutePrediction"
 import Stop from "./stop/Stop"
 
 interface Props { }
@@ -13,6 +16,7 @@ interface State
     sidebar: boolean
 
     stop: Stop | null
+    predictions: RoutePrediction[]
 
 }
 
@@ -26,22 +30,35 @@ class App extends React.Component<Props, State>
         return App.instance
     }
 
-
-    public state: State = {
-        sidebar: false,
-        stop: null
-    }
-
-
-    public async componentDidMount(): Promise<void>
+    public componentDidMount(): void
     {
         App.instance = this
     }
 
 
-    public showSidebar(stop: Stop): void
+    public state: State =
+    {
+        sidebar: false,
+        
+        stop: null,
+        predictions: []
+    }
+
+
+    public async showSidebar(stop: Stop): Promise<void>
     {
         this.setState({ sidebar: true, stop })
+
+        // Query predictions
+        let response = await axios.get("/predictions?stop=" + stop.getId())
+        let predictions: RoutePrediction[] = []
+
+        for (let data of response.data.predictions)
+        {
+            predictions.push(new RoutePrediction(data))
+        }
+
+        this.setState({ predictions })
     }
 
     public hideSidebar(): void
@@ -54,11 +71,15 @@ class App extends React.Component<Props, State>
     {
         return (
             <div>
-                <Map />
+                <NavigatorMap />
                 <div className={"sidebar" + (this.state.sidebar ? " shown" : "")}>
-                    <div className="row">
-                        <h1 className="stop">{this.state.stop?.getName()}</h1>
+                    <div className="title">
+                        <h1>{this.state.stop?.getName()}</h1>
                     </div>
+                    {
+                        this.state.predictions.map((prediction: RoutePrediction, i: number) =>
+                            <Prediction prediction={prediction} key={i} />)
+                    }
                 </div>
             </div>
         )

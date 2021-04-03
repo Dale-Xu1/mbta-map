@@ -15,7 +15,7 @@ class StopData
     public constructor(data: any)
     {
         let attributes = data.attributes
-
+        
         this.id = data.id
         this.name = attributes.name
 

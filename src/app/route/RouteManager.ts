@@ -28,7 +28,10 @@ class RouteManager
         }
 
         // Query routes
-        let response = await axios.get("/routes?stops=" + ids.join(","))
+        let response = await axios.get(
+            "/routes?stops=" + ids.join(",") +
+            "&zoom=" + this.map.getZoom()!
+        )
         
         // If another call occured, discard response
         if (this.index !== index) return

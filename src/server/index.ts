@@ -5,6 +5,7 @@ import axios from "axios"
 import VehicleType from "./VehicleType"
 import StopData from "./data/StopData"
 import RouteData from "./data/RouteData"
+import PredictionData from "./data/PredictionData"
 
 class App
 {
@@ -25,6 +26,7 @@ class App
         this.app.get("/stops", this.getStops.bind(this))
         this.app.get("/routes", this.getRoutes.bind(this))
         this.app.get("/shape", this.getShape.bind(this))
+        this.app.get("/predictions", this.getPredictions.bind(this))
 
         // Start server
         this.app.listen(port)
@@ -46,14 +48,23 @@ class App
             "&filter[longitude]=" + req.query.longitude +
             "&filter[route_type]=" + types +
             "&filter[radius]=" + radius +
-            "&api_key=" + process.env.MBTA_KEY
+            "&include=parent_station&api_key=" + process.env.MBTA_KEY
         )
 
         // Format data
         let stops: StopData[] = []
-        for (let data of response.data.data)
+
+        for (let data of response.data.included)
         {
             stops.push(new StopData(data))
+        }
+        for (let data of response.data.data)
+        {
+            // Filter children stations
+            if (data.relationships.parent_station.data === null)
+            {
+                stops.push(new StopData(data))
+            }
         }
         
         res.send({ stops })
@@ -61,8 +72,16 @@ class App
 
     private async getRoutes(req: Request, res: Response): Promise<void>
     {
+        let zoom = parseInt(req.query.zoom as string)
+        let types = (zoom >= 16) ? App.ALL : (zoom >= 13) ? App.NO_BUS : VehicleType.COMMUTER_RAIL
+
         // Query routes
-        let response = await axios.get(App.URL + "/routes?filter[stop]=" + req.query.stops + "&api_key=" + process.env.MBTA_KEY)
+        let response = await axios.get(
+            App.URL + "/routes" +
+            "?filter[stop]=" + req.query.stops +
+            "&filter[type]=" + types +
+            "&api_key=" + process.env.MBTA_KEY
+        )
 
         // Format data
         let routes: RouteData[] = []
@@ -77,10 +96,42 @@ class App
     private async getShape(req: Request, res: Response): Promise<void>
     {
         // Query shape
-        let response = await axios.get(App.URL + "/shapes?filter[route]=" + req.query.id + "&page[limit]=1&api_key=" + process.env.MBTA_KEY)
-        let shape = response.data.data[0]
+        let response = await axios.get(
+            App.URL + "/shapes" +
+            "?filter[route]=" + req.query.id +
+            "&page[limit]=1&api_key=" + process.env.MBTA_KEY
+        )
 
+        let shape = response.data.data[0]
         res.send(shape.attributes.polyline)
+    }
+
+    private async getPredictions(req: Request, res: Response): Promise<void>
+    {
+        // Query predictions
+        let response = await axios.get(
+            App.URL + "/predictions" +
+            "?filter[stop]=" + req.query.stop +
+            "&include=route&api_key=" + process.env.MBTA_KEY
+        )
+
+        // Format data
+        let predictions = new Map<string, PredictionData>()
+        for (let data of response.data.included)
+        {
+            predictions.set(data.id, new PredictionData(data))
+        }
+
+        for (let data of response.data.data)
+        {
+            // Get prediction route
+            let id = data.relationships.route.data.id
+            let route = predictions.get(id)!
+
+            route.add(data.attributes)
+        }
+
+        res.send({ predictions: Array.from(predictions.values()) })
     }
 
 }
