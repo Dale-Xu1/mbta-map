@@ -90,21 +90,39 @@ class App extends React.Component<Props, State>
 
     public render(): React.ReactElement
     {
+        let stop = this.state.stop
+
         return (
             <div>
                 <NavigatorMap />
                 <div className={"sidebar" + (this.state.sidebar ? " shown" : "")}>
-                    <div className="title">
-                        <h1>{this.state.stop?.getName()}</h1>
-                        <span>{this.state.stop?.getDescription()}</span>
-                    </div>
                     {
-                        this.state.predictions.map((prediction: RoutePrediction, i: number) =>
-                            <Prediction prediction={prediction} key={i} />)
+                        stop === null ? "" :
+                            <div className="title">
+                                <h1>{stop.getName()}</h1>
+                                <span>{stop.getDescription()}</span>
+                            </div>
+                    }
+                    {
+                        this.state.predictions.length > 0 ? this.getPredictions() :
+                            <span className="empty">No vehicles expected</span>
                     }
                 </div>
             </div>
         )
+    }
+
+    private getPredictions(): React.ReactElement[]
+    {
+        let predictions: React.ReactElement[] = []
+
+        for (let i = 0; i < this.state.predictions.length; i++)
+        {
+            let prediction = this.state.predictions[i]
+            predictions.push(<Prediction prediction={prediction} key={i} />)
+        }
+
+        return predictions
     }
 
 }

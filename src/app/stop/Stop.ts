@@ -21,12 +21,12 @@ class Stop
         this.description = data.description
 
         // Create icon
-        let scale = (data.type === VehicleType.BUS) ? 5 : 8
+        let scale = (data.type === VehicleType.BUS) ? 4 : 6
 
         let icon: google.maps.Symbol = {
             path: google.maps.SymbolPath.CIRCLE,
             fillColor: "white", fillOpacity: 1,
-            strokeWeight: scale / 2, scale 
+            strokeWeight: scale * 0.4, scale 
         }
 
         // Create marker

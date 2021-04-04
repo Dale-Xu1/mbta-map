@@ -75,6 +75,13 @@ body {
     color: #898989;
 }
 
+.empty {
+    display: inline-block;
+    font-size: 0.9rem;
+    color: #666666;
+    margin: 8px 24px;
+}
+
 .times {
     margin-left: 16px;
 }

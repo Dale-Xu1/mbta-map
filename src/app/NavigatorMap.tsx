@@ -24,7 +24,8 @@ class NavigatorMap extends React.Component
         // Create map
         this.map = new google.maps.Map(this.div.current!, {
             center: this.position,
-            zoom: 16
+            zoom: 16,
+            disableDefaultUI: true
         })
         this.stops = new StopManager(this.map)
 
