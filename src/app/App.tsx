@@ -16,7 +16,7 @@ interface State
     sidebar: boolean
 
     stop: Stop | null
-    predictions: RoutePrediction[]
+    predictions: RoutePrediction[] | null
 
 }
 
@@ -41,7 +41,7 @@ class App extends React.Component<Props, State>
         sidebar: false,
         
         stop: null,
-        predictions: []
+        predictions: null
     }
 
 
@@ -50,9 +50,13 @@ class App extends React.Component<Props, State>
     public async showSidebar(stop: Stop): Promise<void>
     {
         if (this.state.stop === stop) return
-
         Prediction.start()
-        this.setState({ sidebar: true, stop })
+        
+        this.setState({
+            sidebar: true,
+            stop,
+            predictions: null
+        })
 
         // Query API every 60 seconds for updates
         this.refresh()
@@ -103,22 +107,21 @@ class App extends React.Component<Props, State>
                                 <span>{stop.getDescription()}</span>
                             </div>
                     }
-                    {
-                        this.state.predictions.length > 0 ? this.getPredictions() :
-                            <span className="empty">No vehicles expected</span>
-                    }
+                    {this.state.predictions === null ? "" : this.getPredictions()}
                 </div>
             </div>
         )
     }
 
-    private getPredictions(): React.ReactElement[]
+    private getPredictions(): React.ReactElement[] | React.ReactElement
     {
-        let predictions: React.ReactElement[] = []
+        let routes = this.state.predictions!
 
-        for (let i = 0; i < this.state.predictions.length; i++)
+        // Convert data to components
+        let predictions: React.ReactElement[] = []
+        for (let i = 0; i < routes.length; i++)
         {
-            let prediction = this.state.predictions[i]
+            let prediction = routes[i]
             predictions.push(<Prediction prediction={prediction} key={i} />)
         }
 

@@ -116,27 +116,31 @@ class App
 
     private async getPredictions(req: Request, res: Response): Promise<void>
     {
+        // Query routes
+        let routePromise = axios.get(
+            App.URL + "/routes" +
+            "?filter[stop]=" + req.query.stop +
+            "&api_key=" + process.env.MBTA_KEY
+        )
+        
         // Query predictions
-        let response = await axios.get(
+        let predictionPromise = axios.get(
             App.URL + "/predictions" +
             "?filter[stop]=" + req.query.stop +
-            "&include=route&api_key=" + process.env.MBTA_KEY
+            "&api_key=" + process.env.MBTA_KEY
         )
-        if (response.data.data.length === 0)
-        {
-            res.send({ predictions: [] })
-            return
-        }
+
+        let routeResponse = await routePromise
+        let predictionResponse = await predictionPromise
 
         // Format data
         let predictions = new Map<string, PredictionData>()
-
-        for (let data of response.data.included)
+        for (let data of routeResponse.data.data)
         {
             predictions.set(data.id, new PredictionData(data))
         }
 
-        for (let data of response.data.data)
+        for (let data of predictionResponse.data.data)
         {
             // Get prediction route
             let id = data.relationships.route.data.id
