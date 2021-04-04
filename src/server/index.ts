@@ -142,10 +142,11 @@ class App
 
         for (let data of predictionResponse.data.data)
         {
-            // Get prediction route
             let id = data.relationships.route.data.id
-            let route = predictions.get(id)!
+            if (!predictions.has(id)) continue
 
+            // Get prediction route
+            let route = predictions.get(id)!
             route.add(data.attributes)
         }
 
