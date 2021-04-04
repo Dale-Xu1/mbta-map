@@ -67,7 +67,7 @@ class Prediction extends React.Component<Props>
                 <div className="times">
                     {
                         (inbound === null) ? "" :
-                        <div className="direction">
+                        <div className={(outbound === null) ? "" : "direction"}>
                             <h2>{prediction.getDirections()[1]}</h2>
                             <span>{inbound} min</span>
                         </div>
