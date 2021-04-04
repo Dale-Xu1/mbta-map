@@ -6,7 +6,9 @@ class Stop
 {
 
     private id: string
+
     private name: string
+    private description: string
 
     private marker: google.maps.Marker
 
@@ -14,7 +16,9 @@ class Stop
     public constructor(map: google.maps.Map, data: StopData)
     {
         this.id = data.id
+
         this.name = data.name
+        this.description = data.description
 
         // Create icon
         let scale = (data.type === VehicleType.BUS) ? 5 : 8
@@ -46,6 +50,11 @@ class Stop
     public getName(): string
     {
         return this.name
+    }
+
+    public getDescription(): string
+    {
+        return this.description
     }
 
 

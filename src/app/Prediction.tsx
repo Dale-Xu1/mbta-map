@@ -1,4 +1,5 @@
 import React from "react"
+
 import RoutePrediction from "./prediction/RoutePrediction"
 
 interface Props

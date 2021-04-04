@@ -1,7 +1,7 @@
 import axios from "axios"
 import React from "react"
 
-import "./App.css"
+import "./index.css"
 
 import NavigatorMap from "./NavigatorMap"
 import Prediction from "./Prediction"
@@ -96,6 +96,7 @@ class App extends React.Component<Props, State>
                 <div className={"sidebar" + (this.state.sidebar ? " shown" : "")}>
                     <div className="title">
                         <h1>{this.state.stop?.getName()}</h1>
+                        <span>{this.state.stop?.getDescription()}</span>
                     </div>
                     {
                         this.state.predictions.map((prediction: RoutePrediction, i: number) =>
