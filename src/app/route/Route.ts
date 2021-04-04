@@ -7,10 +7,10 @@ class Route
 {
 
     private static keys: string[] = []
-    private static cache = new Map<string, string>()
+    private static cache = new Map<string, string[]>()
 
 
-    private polyline: google.maps.Polyline | null = null
+    private polylines: google.maps.Polyline[] = []
     private delete = false
 
 
@@ -22,38 +22,44 @@ class Route
     private async getShape(map: google.maps.Map, data: RouteData): Promise<void>
     {
         let id = data.id
-        let polyline: string
+        let shapes: string[]
 
         if (Route.cache.has(id))
         {
             // Reference cached data
-            polyline = Route.cache.get(id)!
+            shapes = Route.cache.get(id)!
         }
         else
         {
-            // Query shape
-            let response = await axios.get("/shape?id=" + data.id)
+            // Query shapes
+            let response = await axios.get("/shapes?id=" + data.id)
 
-            polyline = response.data
-            this.updateCache(id, polyline)
+            shapes = response.data.shapes
+            this.updateCache(id, shapes)
             
             if (this.delete) return
         }
 
-        let weight = (data.type === VehicleType.BUS) ? 4 : 8
+        // Create polylines
+        let weight = (data.type === VehicleType.BUS) ? 3 : 6
         
-        this.polyline = new google.maps.Polyline({
-            path: google.maps.geometry.encoding.decodePath(polyline),
-            strokeColor: data.color,
-            strokeWeight: weight, strokeOpacity: 1,
-            map
-        })
+        for (let shape of shapes)
+        {
+            let polyline = new google.maps.Polyline({
+                path: google.maps.geometry.encoding.decodePath(shape),
+                strokeColor: data.color,
+                strokeWeight: weight, strokeOpacity: 1,
+                map
+            })
+
+            this.polylines.push(polyline)
+        }
     }
 
-    private updateCache(id: string, polyline: string): void
+    private updateCache(id: string, shapes: string[]): void
     {
         Route.keys.push(id)
-        Route.cache.set(id, polyline)
+        Route.cache.set(id, shapes)
 
         if (Route.keys.length > 50)
         {
@@ -66,14 +72,17 @@ class Route
 
     public remove(): void
     {
-        if (this.polyline === null)
+        if (this.polylines.length === 0)
         {
             // Don't create polyline when request is received
             this.delete = true
             return
         }
 
-        this.polyline.setMap(null)
+        for (let polyline of this.polylines)
+        {
+            polyline.setMap(null)
+        }
     }
     
 }

@@ -45,13 +45,38 @@ class App extends React.Component<Props, State>
     }
 
 
+    private timer: NodeJS.Timeout | null = null
+
     public async showSidebar(stop: Stop): Promise<void>
     {
+        if (this.state.stop === stop) return
+
         Prediction.start()
         this.setState({ sidebar: true, stop })
 
+        // Query API every 60 seconds for updates
+        this.refresh()
+        this.timer = setInterval(this.refresh.bind(this), 60000)
+    }
+
+    public hideSidebar(): void
+    {
+        if (this.state.sidebar)
+        {
+            // Stop refreshing
+            Prediction.stop()
+
+            clearInterval(this.timer!)
+            this.timer = null
+
+            this.setState({ sidebar: false })
+        }
+    }
+
+    private async refresh(): Promise<void>
+    {
         // Query predictions
-        let response = await axios.get("/predictions?stop=" + stop.getId())
+        let response = await axios.get("/predictions?stop=" + this.state.stop!.getId())
         let predictions: RoutePrediction[] = []
 
         for (let data of response.data.predictions)
@@ -60,15 +85,6 @@ class App extends React.Component<Props, State>
         }
 
         this.setState({ predictions })
-    }
-
-    public hideSidebar(): void
-    {
-        if (this.state.sidebar)
-        {
-            Prediction.stop()
-            this.setState({ sidebar: false })
-        }
     }
 
 

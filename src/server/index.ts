@@ -25,7 +25,7 @@ class App
 
         this.app.get("/stops", this.getStops.bind(this))
         this.app.get("/routes", this.getRoutes.bind(this))
-        this.app.get("/shape", this.getShape.bind(this))
+        this.app.get("/shapes", this.getShapes.bind(this))
         this.app.get("/predictions", this.getPredictions.bind(this))
 
         // Start server
@@ -53,11 +53,14 @@ class App
 
         // Format data
         let stops: StopData[] = []
-
-        for (let data of response.data.included)
+        if (response.data.included !== undefined)
         {
-            stops.push(new StopData(data))
+            for (let data of response.data.included)
+            {
+                stops.push(new StopData(data))
+            }
         }
+
         for (let data of response.data.data)
         {
             // Filter children stations
@@ -93,17 +96,22 @@ class App
         res.send({ routes })
     }
     
-    private async getShape(req: Request, res: Response): Promise<void>
+    private async getShapes(req: Request, res: Response): Promise<void>
     {
         // Query shape
         let response = await axios.get(
             App.URL + "/shapes" +
             "?filter[route]=" + req.query.id +
-            "&page[limit]=1&api_key=" + process.env.MBTA_KEY
+            "&api_key=" + process.env.MBTA_KEY
         )
 
-        let shape = response.data.data[0]
-        res.send(shape.attributes.polyline)
+        let shapes: string[] = []
+        for (let data of response.data.data)
+        {
+            shapes.push(data.attributes.polyline)
+        }
+
+        res.send({ shapes })
     }
 
     private async getPredictions(req: Request, res: Response): Promise<void>
