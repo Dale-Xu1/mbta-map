@@ -4,7 +4,7 @@ import React from "react"
 import StopManager from "./stop/StopManager"
 import App from "./App"
 
-class NavigatorMap extends React.Component
+class GoogleMap extends React.Component
 {
 
     private map!: google.maps.Map
@@ -110,4 +110,4 @@ class NavigatorMap extends React.Component
 
 }
 
-export default NavigatorMap
+export default GoogleMap

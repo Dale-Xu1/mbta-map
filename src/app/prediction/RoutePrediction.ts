@@ -59,7 +59,7 @@ class RoutePrediction
     {
         let difference = date.getTime() - Date.now()
         
-        let minutes = Math.ceil(difference / 60000)
+        let minutes = Math.floor(difference / 60000)
         return minutes
     }
 

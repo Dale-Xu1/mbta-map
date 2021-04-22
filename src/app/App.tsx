@@ -3,7 +3,7 @@ import React from "react"
 
 import "./index.css"
 
-import NavigatorMap from "./NavigatorMap"
+import Navigator from "./Navigator"
 import Prediction from "./Prediction"
 import RoutePrediction from "./prediction/RoutePrediction"
 import Stop from "./stop/Stop"
@@ -98,7 +98,7 @@ class App extends React.Component<Props, State>
 
         return (
             <div>
-                <NavigatorMap />
+                <Navigator />
                 <div className={"sidebar" + (this.state.sidebar ? " shown" : "")}>
                     {
                         stop === null ? "" :
