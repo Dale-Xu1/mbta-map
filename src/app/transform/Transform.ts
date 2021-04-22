@@ -14,8 +14,13 @@ enum Button
 class Transform
 {
 
+    private static SCALE = 0.0016
+
+
     private translation = Vector.ZERO
+
     private zoom = 0
+    private scale = 1
 
     private isMoving = false
 
@@ -56,33 +61,40 @@ class Transform
         {
             // Calculate new translation vector
             let current = new Vector(e.x, e.y)
-            this.translation = this.initialTranslation.add(current.sub(this.initial))
+
+            let translation = this.initial.sub(current).div(this.scale)
+            this.translation = this.initialTranslation.add(translation)
         }
     }
     
     private onWheel(e: WheelEvent): void
     {
-        let delta = e.deltaY * 0.0016
+        let delta = e.deltaY * Transform.SCALE
 
         // Correct for translation so zoom happens around the cursor
         let mouse = new Vector(e.offsetX, e.offsetY).sub(this.navigator.getOrigin())
-        let correction = mouse.sub(this.translation).mult(1 - 1 / (2 ** delta)) // Who thought algebra was actually useful?
+        let correction = mouse.mult((2 ** delta - 1) / this.scale) // Who thought algebra was actually useful?
 
-        this.translation = this.translation.add(correction)
-        this.zoom -= delta
+        this.translation = this.translation.sub(correction)
+        this.setZoom(this.zoom - delta)
     }
 
 
     public transform(vector: Vector): Vector
     {
-        let scale = 2 ** this.zoom
-        return vector.mult(scale).add(this.translation)
+        return vector.sub(this.translation).mult(this.scale)
     }
 
-    public scale(value: number): number
+
+    public setTranslation(translation: Vector): void
     {
-        let scale = 2 ** this.zoom
-        return value * scale
+        this.translation = translation
+    }
+
+    public setZoom(zoom: number): void
+    {
+        this.zoom = zoom
+        this.scale = 2 ** zoom
     }
 
 }

@@ -22,6 +22,11 @@ class Vector
         return new Vector(this.x * value, this.y * value)
     }
 
+    public negate(): Vector
+    {
+        return new Vector(-this.x, -this.y)
+    }
+
     public div(value: number): Vector
     {
         return new Vector(this.x / value, this.y / value)

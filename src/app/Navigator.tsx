@@ -6,6 +6,12 @@ import Vector from "./transform/Vector"
 class Navigator extends React.Component
 {
 
+    private static SCALE = 256
+
+    private static POSITION = new Vector(42.3528392, -71.0706818)
+    private static ZOOM = 16
+
+
     private canvasRef = React.createRef<HTMLCanvasElement>()
 
     private canvas!: HTMLCanvasElement
@@ -20,9 +26,14 @@ class Navigator extends React.Component
     public componentDidMount(): void
     {
         this.canvas = this.canvasRef.current!
+        this.c = this.canvas.getContext("2d")!
+        
+        // Initialize default transformations
+        let position = this.project(Navigator.POSITION)
         this.transform = new Transform(this, this.canvas)
 
-        this.c = this.canvas.getContext("2d")!
+        this.transform.setTranslation(position)
+        this.transform.setZoom(Navigator.ZOOM)
 
         // Size canvas to window
         this.resizeCanvas = this.resizeCanvas.bind(this)
@@ -48,6 +59,17 @@ class Navigator extends React.Component
     }
 
 
+    public project(vector: Vector): Vector // Expects vector to represent latitude and longitude
+    {
+        let x = vector.y * Navigator.SCALE / 360
+
+        // I have no idea what this means
+        let sin = Math.sin(vector.x * Math.PI / 180)
+        let y = -Math.log((1 + sin) / (1 - sin)) * Navigator.SCALE / (4 * Math.PI)
+
+        return new Vector(x, y)
+    }
+
     public getTransform(): Transform
     {
         return this.transform
@@ -67,8 +89,14 @@ class Navigator extends React.Component
         this.c.save()
         this.c.translate(this.origin.x, this.origin.y)
 
-        let position = this.transform.transform(Vector.ZERO)
-        this.c.strokeRect(position.x, position.y, this.transform.scale(200), this.transform.scale(100))
+        // Test points
+        let world = this.project(Navigator.POSITION)
+        let position = this.transform.transform(world)
+        this.c.strokeRect(position.x, position.y, 10, 10)
+        
+        world = this.project(Navigator.POSITION.add(new Vector(0.001, 0.001)))
+        position = this.transform.transform(world)
+        this.c.strokeRect(position.x, position.y, 10, 10)
 
         this.c.restore()
     }
