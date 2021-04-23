@@ -1,36 +1,38 @@
 import axios from "axios"
 
+import Navigator from "../Navigator"
 import RouteManager from "../route/RouteManager"
 import Stop from "./Stop"
 import StopData from "../../server/data/StopData"
+import LatLong from "../transform/LatLong"
 
 class StopManager
 {
 
     private routes: RouteManager
 
-    private old = new Map<string, Stop>()
     private stops = new Map<string, Stop>()
+    private next = new Map<string, Stop>()
 
     private index = 0
 
 
-    public constructor(private map: google.maps.Map)
+    public constructor(private navigator: Navigator)
     {
-        this.routes = new RouteManager(map)
+        this.routes = new RouteManager(navigator)
     }
 
 
-    public async refresh(position: google.maps.LatLng): Promise<void>
+    public async refresh(position: LatLong): Promise<void>
     {
         this.index++
         let index = this.index
 
         // Query stops
         let response = await axios.get(
-            "/stops?latitude=" + position.lat() +
-            "&longitude=" + position.lng() +
-            "&zoom=" + this.map.getZoom()!
+            "/stops?latitude=" + position.latitude +
+            "&longitude=" + position.longitude +
+            "&zoom=" + this.navigator.getTransform().getZoom()
         )
 
         // If another call occured, discard response
@@ -43,8 +45,14 @@ class StopManager
         }
 
         // Refresh routes
-        this.routes.refresh(this.stops)
+        // this.routes.refresh(this.stops)
         this.clear()
+    }
+
+    public render(c: CanvasRenderingContext2D): void
+    {
+        for (let stop of this.stops.values()) stop.renderBase(c)
+        for (let stop of this.stops.values()) stop.render(c)
     }
 
 
@@ -53,31 +61,25 @@ class StopManager
         let id = data.id
         let stop: Stop
 
-        if (this.old.has(id))
+        if (this.stops.has(id))
         {
             // Repurpose old stop
-            stop = this.old.get(id)!
-            this.old.delete(id)
+            stop = this.stops.get(id)!
+            this.stops.delete(id)
         }
         else
         {
             // Create new stop
-            stop = new Stop(this.map, data)
+            stop = new Stop(this.navigator, data)
         }
 
-        this.stops.set(id, stop)
+        this.next.set(id, stop)
     }
     
     private clear(): void
     {
-        // Remove offscreen markers
-        for (let stop of this.old.values())
-        {
-            stop.remove()
-        }
-
-        this.old = this.stops
-        this.stops = new Map<string, Stop>()
+        this.stops = this.next
+        this.next = new Map<string, Stop>()
     }
 
 }

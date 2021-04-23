@@ -1,5 +1,7 @@
 import React from "react"
 
+import StopManager from "./stop/StopManager"
+import LatLong from "./transform/LatLong"
 import Transform from "./transform/Transform"
 import Vector from "./transform/Vector"
 
@@ -8,7 +10,7 @@ class Navigator extends React.Component
 
     private static SCALE = 256
 
-    private static POSITION = new Vector(42.3528392, -71.0706818)
+    private static POSITION = new LatLong(42.3528392, -71.0706818)
     private static ZOOM = 16
 
 
@@ -20,7 +22,10 @@ class Navigator extends React.Component
     private request!: number
 
     private transform!: Transform
+    private position = Navigator.POSITION
     private origin!: Vector
+
+    private stops = new StopManager(this)
 
 
     public componentDidMount(): void
@@ -28,12 +33,7 @@ class Navigator extends React.Component
         this.canvas = this.canvasRef.current!
         this.c = this.canvas.getContext("2d")!
         
-        // Initialize default transformations
-        let position = this.project(Navigator.POSITION)
         this.transform = new Transform(this, this.canvas)
-
-        this.transform.setTranslation(position)
-        this.transform.setZoom(Navigator.ZOOM)
 
         // Size canvas to window
         this.resizeCanvas = this.resizeCanvas.bind(this)
@@ -41,6 +41,9 @@ class Navigator extends React.Component
 
         window.addEventListener("resize", this.resizeCanvas)
         this.update()
+        
+        // Get current location of user
+        navigator.geolocation.getCurrentPosition(this.initializeMap.bind(this), this.initialize.bind(this))
     }
 
     public componentWillUnmount(): void
@@ -58,17 +61,49 @@ class Navigator extends React.Component
         this.origin = new Vector(width / 2, height / 2)
     }
 
-
-    public project(vector: Vector): Vector // Expects vector to represent latitude and longitude
+    private initializeMap(result: GeolocationPosition): void
     {
-        let x = vector.y * Navigator.SCALE / 360
+        // Center map on position
+        let position = result.coords
+        this.position = new LatLong(position.latitude, position.longitude)
+        
+        this.initialize()
+    }
+
+    private initialize(): void
+    {
+        // Set transformation and fetch stops
+        let translation = this.toWorld(this.position)
+
+        this.transform.setTranslation(translation)
+        this.transform.setZoom(Navigator.ZOOM)
+
+        this.stops.refresh(this.position)
+    }
+
+
+    public toWorld(position: LatLong): Vector
+    {
+        let x = position.longitude * Navigator.SCALE / 360
 
         // I have no idea what this means
-        let sin = Math.sin(vector.x * Math.PI / 180)
-        let y = -Math.log((1 + sin) / (1 - sin)) * Navigator.SCALE / (4 * Math.PI)
+        let tan = Math.tan((Math.PI / 4) + (position.latitude * Math.PI / 360))
+        let y = -Math.log(tan) * Navigator.SCALE / (2 * Math.PI)
 
         return new Vector(x, y)
     }
+
+    public toCoordinates(vector: Vector): LatLong
+    {
+        let longitude = vector.x / Navigator.SCALE * 360
+
+        // Literally the opposite of the other function
+        let exp = Math.exp(-vector.y / Navigator.SCALE * (2 * Math.PI))
+        let latitude = (Math.atan(exp) - (Math.PI / 4)) / Math.PI * 360
+
+        return new LatLong(latitude, longitude)
+    }
+
 
     public getTransform(): Transform
     {
@@ -85,20 +120,23 @@ class Navigator extends React.Component
     {
         this.request = window.requestAnimationFrame(this.update.bind(this))
 
-        this.c.clearRect(0, 0, this.canvas.width, this.canvas.height)
-        this.c.save()
-        this.c.translate(this.origin.x, this.origin.y)
+        let c = this.c
+        c.clearRect(0, 0, this.canvas.width, this.canvas.height)
+        c.save()
+        c.translate(this.origin.x, this.origin.y)
 
-        // Test points
-        let world = this.project(Navigator.POSITION)
-        let position = this.transform.transform(world)
-        this.c.strokeRect(position.x, position.y, 10, 10)
+        // // Test points
+        // let world = this.toWorld(Navigator.POSITION)
+        // let position = this.transform.transform(world)
+        // c.strokeRect(position.x, position.y, 10, 10)
         
-        world = this.project(Navigator.POSITION.add(new Vector(0.001, 0.001)))
-        position = this.transform.transform(world)
-        this.c.strokeRect(position.x, position.y, 10, 10)
+        // world = this.toWorld(new LatLong(Navigator.POSITION.latitude + 0.001, Navigator.POSITION.longitude + 0.001))
+        // position = this.transform.transform(world)
+        // c.strokeRect(position.x, position.y, 10, 10)
 
-        this.c.restore()
+        this.stops.render(c)
+
+        c.restore()
     }
 
     public render(): React.ReactElement

@@ -1,6 +1,9 @@
+import Navigator from "../Navigator"
 import StopData from "../../server/data/StopData"
 import VehicleType from "../../server/VehicleType"
-import App from "../App"
+import LatLong from "../transform/LatLong"
+import Vector from "../transform/Vector"
+import Transform from "../transform/Transform"
 
 class Stop
 {
@@ -10,35 +13,25 @@ class Stop
     private name: string
     private description: string
 
-    private marker: google.maps.Marker
+    private transform: Transform
+
+    private position: Vector
+    private isBus: boolean
 
 
-    public constructor(map: google.maps.Map, data: StopData)
+    public constructor(navigator: Navigator, data: StopData)
     {
         this.id = data.id
 
         this.name = data.name
         this.description = data.description
 
-        // Create icon
-        let scale = (data.type === VehicleType.BUS) ? 4 : 6
+        this.transform = navigator.getTransform()
 
-        let icon: google.maps.Symbol = {
-            path: google.maps.SymbolPath.CIRCLE,
-            fillColor: "white", fillOpacity: 1,
-            strokeWeight: scale * 0.4, scale 
-        }
+        let position = new LatLong(data.latitude, data.longitude)
+        this.position = navigator.toWorld(position)
 
-        // Create marker
-        this.marker = new google.maps.Marker({
-            position: {
-                lat: data.latitude as number,
-                lng: data.longitude as number
-            },
-            icon, map
-        })
-
-        this.marker.addListener("click", this.click.bind(this))
+        this.isBus = (data.type === VehicleType.BUS)
     }
 
 
@@ -58,16 +51,34 @@ class Stop
     }
 
 
-    private click(): void
+    public renderBase(c: CanvasRenderingContext2D): void
     {
-        // Show prediction data on sidebar
-        App.getInstance().showSidebar(this)
+        let position = this.transform.transform(this.position)
+
+        c.beginPath()
+        c.arc(position.x, position.y, this.isBus ? 5 : 8, 0, 2 * Math.PI)
+
+        c.fillStyle = "black"
+        c.fill()
     }
 
-    public remove(): void
+    public render(c: CanvasRenderingContext2D): void
     {
-        this.marker.setMap(null)
+        let position = this.transform.transform(this.position)
+        
+        c.beginPath()
+        c.arc(position.x, position.y, this.isBus ? 3 : 5, 0, 2 * Math.PI)
+        
+        c.fillStyle = "white"
+        c.fill()
     }
+
+
+    // private click(): void
+    // {
+    //     // Show prediction data on sidebar
+    //     App.getInstance().showSidebar(this)
+    // }
 
 }
 

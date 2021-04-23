@@ -1,5 +1,6 @@
 import axios from "axios"
 
+import Navigator from "../Navigator"
 import Stop from "../stop/Stop"
 import Route from "./Route"
 import RouteData from "../../server/data/RouteData"
@@ -13,7 +14,7 @@ class RouteManager
     private index = 0
 
 
-    public constructor(private map: google.maps.Map) { }
+    public constructor(private navigator: Navigator) { }
 
 
     public async refresh(stops: Map<string, Stop>): Promise<void>
@@ -30,7 +31,7 @@ class RouteManager
         // Query routes
         let response = await axios.get(
             "/routes?stops=" + ids.join(",") +
-            "&zoom=" + this.map.getZoom()!
+            "&zoom=" + this.navigator.getTransform().getZoom()
         )
         
         // If another call occured, discard response
@@ -59,7 +60,7 @@ class RouteManager
         else
         {
             // Create new route
-            route = new Route(this.map, data)
+            route = new Route(this.navigator, data)
         }
 
         this.routes.set(id, route)
@@ -67,12 +68,6 @@ class RouteManager
     
     private clear(): void
     {
-        // Remove offscreen markers
-        for (let route of this.old.values())
-        {
-            route.remove()
-        }
-
         this.old = this.routes
         this.routes = new Map<string, Route>()
     }

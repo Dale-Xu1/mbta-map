@@ -85,10 +85,15 @@ class Transform
         return vector.sub(this.translation).mult(this.scale)
     }
 
-
     public setTranslation(translation: Vector): void
     {
         this.translation = translation
+    }
+
+
+    public getZoom(): number
+    {
+        return this.zoom
     }
 
     public setZoom(zoom: number): void
