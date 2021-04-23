@@ -12,6 +12,8 @@ class Route
     private static keys: string[] = []
     private static cache = new Map<string, Polyline[]>()
 
+
+    private id!: string
     
     private color!: string
     private type!: VehicleType
@@ -41,15 +43,15 @@ class Route
 
     private async getShape(transform: Transform, data: RouteData): Promise<void>
     {
-        let id = data.id
+        this.id = data.id
 
         this.color = data.color
         this.type = data.type
 
-        if (Route.cache.has(id))
+        if (Route.cache.has(this.id))
         {
             // Reference cached data
-            this.polylines = Route.cache.get(id)!
+            this.polylines = Route.cache.get(this.id)!
         }
         else
         {
@@ -61,24 +63,42 @@ class Route
                 this.polylines.push(new Polyline(transform, shape))
             }
 
-            Route.updateCache(id, this.polylines)
+            Route.updateCache(this.id, this.polylines)
         }
+    }
+
+
+    public getType(): VehicleType
+    {
+        return this.type
     }
 
 
     public render(c: CanvasRenderingContext2D): void
     {
         let zoom = this.transform.getZoom()
+
         if (zoom < Stop.BUS_ZOOM && this.type === VehicleType.BUS) return
+        if (this.polylines.length === 0) return
 
         c.strokeStyle = this.color
         
         c.lineWidth = this.type === VehicleType.BUS ? 3 : 6
         c.lineCap = "round"
 
-        for (let polyline of this.polylines)
+        if (this.type === VehicleType.BUS && this.polylines.length > 1)
         {
-            polyline.render(c)
+            this.polylines[0].render(c)
+            this.polylines[1].render(c)
+        }
+        else if (this.id === "Red")
+        {
+            this.polylines[0].render(c)
+            this.polylines[2].render(c)
+        }
+        else
+        {
+            this.polylines[0].render(c)
         }
     }
     

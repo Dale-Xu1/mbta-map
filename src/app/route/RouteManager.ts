@@ -4,11 +4,70 @@ import Stop from "../stop/Stop"
 import Route from "./Route"
 import RouteData from "../../server/data/RouteData"
 import Transform from "../transform/Transform"
+import VehicleType from "../../server/VehicleType"
+
+class Routes
+{
+
+    private routes = new Map<string, Route>()
+    private buses = new Map<string, Route>()
+
+
+    public get(id: string): Route
+    {
+        if (this.buses.has(id))
+        {
+            return this.buses.get(id)!
+        }
+        return this.routes.get(id)!
+    }
+
+    public set(id: string, route: Route): void
+    {
+        if (route.getType() === VehicleType.BUS)
+        {
+            this.buses.set(id, route)
+        }
+        else
+        {
+            this.routes.set(id, route)
+        }
+    }
+
+    public has(id: string): boolean
+    {
+        return this.buses.has(id) || this.routes.has(id)
+    }
+
+    public delete(id: string): void
+    {
+        if (this.buses.has(id))
+        {
+            this.buses.delete(id)
+        }
+        else
+        {
+            this.routes.delete(id)
+        }
+    }
+
+
+    public getRoutes(): Route[]
+    {
+        return Array.from(this.routes.values())
+    }
+
+    public getBuses(): Route[]
+    {
+        return Array.from(this.buses.values())
+    }
+
+}
 
 class RouteManager
 {
 
-    private routes = new Map<string, Route>()
+    private routes = new Routes()
     private index = 0
 
 
@@ -36,7 +95,7 @@ class RouteManager
         if (this.index !== index) return
         this.index = 0
 
-        let next = new Map<string, Route>()
+        let next = new Routes()
         for (let data of response.data.routes)
         {
             this.add(data, next)
@@ -45,7 +104,7 @@ class RouteManager
         this.routes = next
     }
 
-    private add(data: RouteData, next: Map<string, Route>): void
+    private add(data: RouteData, next: Routes): void
     {
         let id = data.id
         let route: Route
@@ -53,7 +112,7 @@ class RouteManager
         if (this.routes.has(id))
         {
             // Repurpose old route
-            route = this.routes.get(id)!
+            route = this.routes.get(id)
             this.routes.delete(id)
         }
         else
@@ -68,7 +127,11 @@ class RouteManager
 
     public render(c: CanvasRenderingContext2D): void
     {
-        for (let route of this.routes.values())
+        for (let route of this.routes.getBuses())
+        {
+            route.render(c)
+        }
+        for (let route of this.routes.getRoutes())
         {
             route.render(c)
         }

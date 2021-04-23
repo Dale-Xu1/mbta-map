@@ -4,7 +4,7 @@ import React from "react"
 import "./index.css"
 
 import Navigator from "./Navigator"
-import Prediction from "./Prediction"
+import Prediction from "./prediction/Prediction"
 import RoutePrediction from "./prediction/RoutePrediction"
 import Stop from "./stop/Stop"
 
