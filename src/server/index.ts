@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express"
 import dotenv from "dotenv"
 import axios from "axios"
+import cors from "cors"
 
 import VehicleType from "./VehicleType"
 import StopData from "./data/StopData"
@@ -21,7 +22,7 @@ class App
 
     public constructor(port: string)
     {
-        this.app.use(express.static("build"))
+        this.app.use(cors(), express.static("build"))
 
         this.app.get("/stops", this.getStops.bind(this))
         this.app.get("/routes", this.getRoutes.bind(this))
