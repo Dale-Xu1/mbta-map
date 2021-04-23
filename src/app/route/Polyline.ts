@@ -1,3 +1,4 @@
+import Navigator from "../Navigator"
 import LatLong from "../transform/LatLong"
 import Transform from "../transform/Transform"
 import Vector from "../transform/Vector"
@@ -50,7 +51,7 @@ class Polyline
         let coordinates = Polyline.decode(shape)
         for (let position of coordinates)
         {
-            this.points.push(Transform.toWorld(position))
+            this.points.push(Navigator.toWorld(position))
         }
     }
 

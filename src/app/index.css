@@ -10,6 +10,11 @@ body {
     overflow: hidden;
 }
 
+.app {
+    position: relative;
+    overflow: hidden;
+}
+
 .sidebar {
     position: absolute;
     width: 350px;

@@ -3,6 +3,7 @@ import VehicleType from "../../server/VehicleType"
 import LatLong from "../transform/LatLong"
 import Vector from "../transform/Vector"
 import Transform from "../transform/Transform"
+import Navigator from "../Navigator"
 
 class Stop
 {
@@ -31,7 +32,7 @@ class Stop
         this.type = data.type
 
         let position = new LatLong(data.latitude, data.longitude)
-        this.position = Transform.toWorld(position)
+        this.position = Navigator.toWorld(position)
     }
 
 

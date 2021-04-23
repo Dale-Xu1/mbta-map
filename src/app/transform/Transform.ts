@@ -1,6 +1,5 @@
 import Vector from "./Vector"
 import Navigator from "../Navigator"
-import LatLong from "./LatLong"
 
 enum Button
 {
@@ -15,31 +14,7 @@ enum Button
 class Transform
 {
 
-    private static SCALE = 256
     private static SPEED = 0.0016
-    
-
-    public static toWorld(position: LatLong): Vector
-    {
-        let x = position.longitude * Transform.SCALE / 360
-
-        // I have no idea what this means
-        let tan = Math.tan(Math.PI / 4 + (position.latitude * Math.PI / 360))
-        let y = -Math.log(tan) * Transform.SCALE / (2 * Math.PI)
-
-        return new Vector(x, y)
-    }
-
-    public static toCoordinates(vector: Vector): LatLong
-    {
-        let longitude = vector.x / Transform.SCALE * 360
-
-        // Literally the opposite of the other function
-        let exp = Math.exp(-vector.y / Transform.SCALE * 2 * Math.PI)
-        let latitude = (Math.atan(exp) - (Math.PI / 4)) / Math.PI * 360
-
-        return new LatLong(latitude, longitude)
-    }
 
 
     private translation = Vector.ZERO
@@ -56,41 +31,29 @@ class Transform
     public constructor(private navigator: Navigator, element: HTMLElement)
     {
         element.addEventListener("mousedown", this.onMouseDown.bind(this))
-        element.addEventListener("mouseup", this.onMouseUp.bind(this))
+        element.addEventListener("mouseup", this.stopTranslation.bind(this))
         element.addEventListener("mousemove", this.onMouseMove.bind(this))
         element.addEventListener("wheel", this.onWheel.bind(this))
+        
+        element.addEventListener("touchstart", this.onTouchStart.bind(this))
+        element.addEventListener("touchend", this.stopTranslation.bind(this))
+        element.addEventListener("touchmove", this.onTouchMove.bind(this))
     }
 
 
     private onMouseDown(e: MouseEvent): void
     {
-        // If left-mouse button is pressed
         if (e.buttons === Button.LEFT)
         {
-            this.isMoving = true
-
-            // Save initial mouse location and translation
-            this.initial = new Vector(e.x, e.y)
-            this.initialTranslation = this.translation
+            this.startTranslation(new Vector(e.x, e.y))
         }
-    }
-
-    private onMouseUp(): void
-    {
-        this.isMoving = false
     }
     
     private onMouseMove(e: MouseEvent): void
     {
         if (this.isMoving)
         {
-            // Calculate new translation vector
-            let current = new Vector(e.x, e.y)
-
-            let translation = this.initial.sub(current).div(this.scale)
-            this.translation = this.initialTranslation.add(translation)
-
-            this.onMove()
+            this.translate(new Vector(e.x, e.y))
         }
     }
     
@@ -106,6 +69,43 @@ class Transform
         
         this.updateZoom(this.zoom - delta)
         this.onZoom()
+    }
+
+
+    private onTouchStart(e: TouchEvent): void
+    {
+        let touch = e.touches[0]
+        this.startTranslation(new Vector(touch.clientX, touch.clientY))
+    }
+
+    private onTouchMove(e: TouchEvent): void
+    {
+        let touch = e.touches[0]
+        this.translate(new Vector(touch.clientX, touch.clientY))
+    }
+
+
+    private startTranslation(initial: Vector): void
+    {
+        this.isMoving = true
+
+        // Save initial mouse location and translation
+        this.initial = initial
+        this.initialTranslation = this.translation
+    }
+    
+    private stopTranslation(): void
+    {
+        this.isMoving = false
+    }
+
+    private translate(current: Vector): void
+    {
+        // Calculate new translation vector
+        let translation = this.initial.sub(current).div(this.scale)
+        this.translation = this.initialTranslation.add(translation)
+
+        this.onMove()
     }
 
 
@@ -139,7 +139,7 @@ class Transform
 
     private refresh(): void
     {
-        let position = Transform.toCoordinates(this.translation)
+        let position = Navigator.toCoordinates(this.translation)
         this.navigator.refresh(position)
     }
 

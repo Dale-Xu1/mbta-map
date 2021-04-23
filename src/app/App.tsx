@@ -84,7 +84,7 @@ class App extends React.Component<Props, State>
         let stop = this.state.stop
 
         return (
-            <div>
+            <div className="app">
                 <Navigator app={this} />
                 <div className={"sidebar" + (this.state.sidebar ? " shown" : "")}>
                     {

@@ -16,8 +16,33 @@ interface Props
 class Navigator extends React.Component<Props>
 {
 
+    private static SCALE = 256
+
     private static POSITION = new LatLong(42.3528392, -71.0706818)
     private static ZOOM = 16
+    
+
+    public static toWorld(position: LatLong): Vector
+    {
+        let x = position.longitude * Navigator.SCALE / 360
+
+        // I have no idea what this means
+        let tan = Math.tan(Math.PI / 4 + (position.latitude * Math.PI / 360))
+        let y = -Math.log(tan) * Navigator.SCALE / (2 * Math.PI)
+
+        return new Vector(x, y)
+    }
+
+    public static toCoordinates(vector: Vector): LatLong
+    {
+        let longitude = vector.x / Navigator.SCALE * 360
+
+        // Literally the opposite of the other function
+        let exp = Math.exp(-vector.y / Navigator.SCALE * 2 * Math.PI)
+        let latitude = (Math.atan(exp) - (Math.PI / 4)) / Math.PI * 360
+
+        return new LatLong(latitude, longitude)
+    }
 
 
     private canvasRef = React.createRef<HTMLCanvasElement>()
@@ -84,7 +109,7 @@ class Navigator extends React.Component<Props>
     private initialize(position: LatLong): void
     {
         // Set transformation and fetch stops
-        let translation = Transform.toWorld(position)
+        let translation = Navigator.toWorld(position)
 
         this.transform.setTranslation(translation)
         this.transform.setZoom(Navigator.ZOOM)
