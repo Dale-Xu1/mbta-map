@@ -39,7 +39,7 @@ class App
 
         // Stop showing buses when below 16, only show commuter rail below 11
         let types = (zoom >= 16) ? App.ALL : (zoom >= 13) ? App.NO_BUS : VehicleType.COMMUTER_RAIL
-        let radius = 1.2 / (2 ** (zoom - 10))
+        let radius = 1600 / (2 ** zoom)
 
         // Query stops
         let response = await axios.get(

@@ -23,19 +23,6 @@ interface State
 class App extends React.Component<Props, State>
 {
 
-    private static instance: App
-
-    public static getInstance(): App
-    {
-        return App.instance
-    }
-
-    public componentDidMount(): void
-    {
-        App.instance = this
-    }
-
-
     public state: State =
     {
         sidebar: false,
@@ -98,7 +85,7 @@ class App extends React.Component<Props, State>
 
         return (
             <div>
-                <Navigator />
+                <Navigator app={this} />
                 <div className={"sidebar" + (this.state.sidebar ? " shown" : "")}>
                     {
                         stop === null ? "" :

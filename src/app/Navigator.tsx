@@ -1,14 +1,20 @@
 import React from "react"
+import App from "./App"
 
 import StopManager from "./stop/StopManager"
 import LatLong from "./transform/LatLong"
 import Transform from "./transform/Transform"
 import Vector from "./transform/Vector"
 
-class Navigator extends React.Component
+interface Props
 {
 
-    private static SCALE = 256
+    app: App
+
+}
+
+class Navigator extends React.Component<Props>
+{
 
     private static POSITION = new LatLong(42.3528392, -71.0706818)
     private static ZOOM = 16
@@ -22,10 +28,9 @@ class Navigator extends React.Component
     private request!: number
 
     private transform!: Transform
-    private position = Navigator.POSITION
-    private origin!: Vector
-
     private stops = new StopManager(this)
+
+    private origin!: Vector
 
 
     public componentDidMount(): void
@@ -43,7 +48,7 @@ class Navigator extends React.Component
         this.update()
         
         // Get current location of user
-        navigator.geolocation.getCurrentPosition(this.initializeMap.bind(this), this.initialize.bind(this))
+        navigator.geolocation.getCurrentPosition(this.initializeMap.bind(this), this.initializeDefault.bind(this))
     }
 
     public componentWillUnmount(): void
@@ -64,44 +69,45 @@ class Navigator extends React.Component
     private initializeMap(result: GeolocationPosition): void
     {
         // Center map on position
-        let position = result.coords
-        this.position = new LatLong(position.latitude, position.longitude)
+        let coordinates = result.coords
+        let position = new LatLong(coordinates.latitude, coordinates.longitude)
         
-        this.initialize()
+        this.initialize(position)
     }
 
-    private initialize(): void
+    private initializeDefault(): void
+    {
+        this.initialize(Navigator.POSITION)
+    }
+
+    private initialize(position: LatLong): void
     {
         // Set transformation and fetch stops
-        let translation = this.toWorld(this.position)
+        let translation = Transform.toWorld(position)
 
         this.transform.setTranslation(translation)
         this.transform.setZoom(Navigator.ZOOM)
 
-        this.stops.refresh(this.position)
+        this.stops.refresh(position)
     }
 
+    
+    private timeout: NodeJS.Timeout | null = null
 
-    public toWorld(position: LatLong): Vector
+    public refresh(position: LatLong): void
     {
-        let x = position.longitude * Navigator.SCALE / 360
+        // Cancel refresh from calling if another was requested
+        if (this.timeout !== null)
+        {
+            clearTimeout(this.timeout)
+        }
 
-        // I have no idea what this means
-        let tan = Math.tan((Math.PI / 4) + (position.latitude * Math.PI / 360))
-        let y = -Math.log(tan) * Navigator.SCALE / (2 * Math.PI)
-
-        return new Vector(x, y)
-    }
-
-    public toCoordinates(vector: Vector): LatLong
-    {
-        let longitude = vector.x / Navigator.SCALE * 360
-
-        // Literally the opposite of the other function
-        let exp = Math.exp(-vector.y / Navigator.SCALE * (2 * Math.PI))
-        let latitude = (Math.atan(exp) - (Math.PI / 4)) / Math.PI * 360
-
-        return new LatLong(latitude, longitude)
+        // Wait before refreshing
+        this.timeout = setTimeout(() =>
+        {
+            this.timeout = null
+            this.stops.refresh(position)
+        }, 300)
     }
 
 
@@ -125,17 +131,7 @@ class Navigator extends React.Component
         c.save()
         c.translate(this.origin.x, this.origin.y)
 
-        // // Test points
-        // let world = this.toWorld(Navigator.POSITION)
-        // let position = this.transform.transform(world)
-        // c.strokeRect(position.x, position.y, 10, 10)
-        
-        // world = this.toWorld(new LatLong(Navigator.POSITION.latitude + 0.001, Navigator.POSITION.longitude + 0.001))
-        // position = this.transform.transform(world)
-        // c.strokeRect(position.x, position.y, 10, 10)
-
         this.stops.render(c)
-
         c.restore()
     }
 

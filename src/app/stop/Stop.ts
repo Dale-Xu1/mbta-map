@@ -29,7 +29,7 @@ class Stop
         this.transform = navigator.getTransform()
 
         let position = new LatLong(data.latitude, data.longitude)
-        this.position = navigator.toWorld(position)
+        this.position = Transform.toWorld(position)
 
         this.isBus = (data.type === VehicleType.BUS)
     }
@@ -72,13 +72,6 @@ class Stop
         c.fillStyle = "white"
         c.fill()
     }
-
-
-    // private click(): void
-    // {
-    //     // Show prediction data on sidebar
-    //     App.getInstance().showSidebar(this)
-    // }
 
 }
 

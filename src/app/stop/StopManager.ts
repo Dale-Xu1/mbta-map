@@ -45,8 +45,8 @@ class StopManager
         }
 
         // Refresh routes
-        // this.routes.refresh(this.stops)
         this.clear()
+        // this.routes.refresh(this.stops)
     }
 
     public render(c: CanvasRenderingContext2D): void
