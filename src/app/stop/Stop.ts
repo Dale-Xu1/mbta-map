@@ -8,6 +8,7 @@ class Stop
 {
 
     public static BUS_ZOOM = 16
+    private static RADIUS = 10
 
 
     private id: string
@@ -47,6 +48,12 @@ class Stop
     public getDescription(): string
     {
         return this.description
+    }
+
+    public isSelected(vector: Vector): boolean
+    {
+        let position = this.transform.transform(this.position)
+        return position.sub(vector).magSq() < Stop.RADIUS ** 2
     }
 
 

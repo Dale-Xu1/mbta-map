@@ -1,23 +1,54 @@
 import axios from "axios"
 
+import Navigator from "../Navigator"
 import RouteManager from "../route/RouteManager"
 import Stop from "./Stop"
 import StopData from "../../server/data/StopData"
 import LatLong from "../transform/LatLong"
+import Vector from "../transform/Vector"
 import Transform from "../transform/Transform"
 
 class StopManager
 {
 
+    private transform: Transform
     private routes: RouteManager
+    
     private stops = new Map<string, Stop>()
 
+    private drag = false
     private index = 0
 
 
-    public constructor(private transform: Transform)
+    public constructor(private navigator: Navigator, element: HTMLElement)
     {
-        this.routes = new RouteManager(transform)
+        this.transform = navigator.getTransform()
+        this.routes = new RouteManager(navigator.getTransform())
+
+        element.addEventListener("mousedown", () => this.drag = false)
+        element.addEventListener("mousemove", () => this.drag = true)
+        element.addEventListener("mouseup", this.onClick.bind(this))
+    }
+
+    private onClick(e: MouseEvent): void
+    {
+        // Ignore click if a drag occured
+        if (this.drag) return
+
+        let app = this.navigator.props.app
+        let mouse = new Vector(e.offsetX, e.offsetY).sub(this.navigator.getOrigin())
+        
+        for (let stop of this.stops.values())
+        {
+            // Test stops to see if one was selected
+            if (stop.isSelected(mouse))
+            {
+                app.showSidebar(stop)
+                return
+            }
+        }
+
+        app.hideSidebar()
     }
 
 

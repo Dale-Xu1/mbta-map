@@ -36,7 +36,7 @@ class App extends React.Component<Props, State>
 
     public async showSidebar(stop: Stop): Promise<void>
     {
-        if (this.state.stop === stop) return
+        if (this.state.sidebar && this.state.stop === stop) return
         Prediction.start()
         
         this.setState({

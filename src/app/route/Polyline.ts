@@ -62,6 +62,7 @@ class Polyline
         {
             let position = this.transform.transform(this.points[i])
 
+            // Draw segment if either of the points are visible
             if (this.transform.isVisible(previous) || this.transform.isVisible(position))
             {
                 c.beginPath()
