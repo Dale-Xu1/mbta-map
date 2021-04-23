@@ -22,7 +22,7 @@ class App
 
     public constructor(port: string)
     {
-        this.app.use(cors(), express.static("build"))
+        this.app.use(express.static("build"))
 
         this.app.get("/stops", this.getStops.bind(this))
         this.app.get("/routes", this.getRoutes.bind(this))
@@ -157,7 +157,7 @@ class App
 
 // Initialize environment variables
 dotenv.config()
-let port = process.env.SERVER_PORT!
+let port = process.env.PORT!
 
 new App(port)
 console.log(`Server running on port ${port}`)
