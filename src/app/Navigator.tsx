@@ -28,7 +28,7 @@ class Navigator extends React.Component<Props>
     private request!: number
 
     private transform!: Transform
-    private stops = new StopManager(this)
+    private stops!: StopManager
 
     private origin!: Vector
 
@@ -39,6 +39,7 @@ class Navigator extends React.Component<Props>
         this.c = this.canvas.getContext("2d")!
         
         this.transform = new Transform(this, this.canvas)
+        this.stops = new StopManager(this.transform)
 
         // Size canvas to window
         this.resizeCanvas = this.resizeCanvas.bind(this)

@@ -37,8 +37,7 @@ class App
     {
         let zoom = parseInt(req.query.zoom as string)
 
-        // Stop showing buses when below 16, only show commuter rail below 11
-        let types = (zoom >= 16) ? App.ALL : (zoom >= 13) ? App.NO_BUS : VehicleType.COMMUTER_RAIL
+        let types = zoom >= 15 ? App.ALL :  App.NO_BUS
         let radius = 1600 / (2 ** zoom)
 
         // Query stops
@@ -76,7 +75,7 @@ class App
     private async getRoutes(req: Request, res: Response): Promise<void>
     {
         let zoom = parseInt(req.query.zoom as string)
-        let types = (zoom >= 16) ? App.ALL : (zoom >= 13) ? App.NO_BUS : VehicleType.COMMUTER_RAIL
+        let types = zoom >= 15 ? App.ALL :  App.NO_BUS
 
         // Query routes
         let response = await axios.get(

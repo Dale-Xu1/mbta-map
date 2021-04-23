@@ -130,7 +130,7 @@ class Transform
     {
         // Test for when zoom level changes
         let zoom = Math.floor(this.zoom)
-        if (zoom != this.previousZoom)
+        if (zoom !== this.previousZoom)
         {
             this.previousZoom = zoom
             this.refresh()
@@ -153,6 +153,16 @@ class Transform
     {
         this.translation = translation
         this.previousTranslation = translation
+    }
+
+    public isVisible(vector: Vector): boolean
+    {
+        let origin = this.navigator.getOrigin()
+        
+        let x = vector.x > -origin.x && vector.x < origin.x
+        let y = vector.y > -origin.y && vector.y < origin.y
+        
+        return x && y
     }
 
 

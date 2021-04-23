@@ -1,20 +1,18 @@
 import axios from "axios"
 
-import Navigator from "../Navigator"
 import Stop from "../stop/Stop"
 import Route from "./Route"
 import RouteData from "../../server/data/RouteData"
+import Transform from "../transform/Transform"
 
 class RouteManager
 {
 
-    private old = new Map<string, Route>()
     private routes = new Map<string, Route>()
-
     private index = 0
 
 
-    public constructor(private navigator: Navigator) { }
+    public constructor(private transform: Transform) { }
 
 
     public async refresh(stops: Map<string, Stop>): Promise<void>
@@ -31,45 +29,49 @@ class RouteManager
         // Query routes
         let response = await axios.get(
             "/routes?stops=" + ids.join(",") +
-            "&zoom=" + this.navigator.getTransform().getZoom()
+            "&zoom=" + this.transform.getZoom()
         )
         
         // If another call occured, discard response
         if (this.index !== index) return
         this.index = 0
 
+        let next = new Map<string, Route>()
         for (let data of response.data.routes)
         {
-            this.add(data)
+            this.add(data, next)
         }
-        this.clear()
+        
+        this.routes = next
     }
 
-
-    private add(data: RouteData): void
+    private add(data: RouteData, next: Map<string, Route>): void
     {
         let id = data.id
         let route: Route
 
-        if (this.old.has(id))
+        if (this.routes.has(id))
         {
             // Repurpose old route
-            route = this.old.get(id)!
-            this.old.delete(id)
+            route = this.routes.get(id)!
+            this.routes.delete(id)
         }
         else
         {
             // Create new route
-            route = new Route(this.navigator, data)
+            route = new Route(this.transform, data)
         }
 
-        this.routes.set(id, route)
+        next.set(id, route)
     }
-    
-    private clear(): void
+
+
+    public render(c: CanvasRenderingContext2D): void
     {
-        this.old = this.routes
-        this.routes = new Map<string, Route>()
+        for (let route of this.routes.values())
+        {
+            route.render(c)
+        }
     }
 
 }

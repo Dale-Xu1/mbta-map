@@ -1,4 +1,3 @@
-import Navigator from "../Navigator"
 import StopData from "../../server/data/StopData"
 import VehicleType from "../../server/VehicleType"
 import LatLong from "../transform/LatLong"
@@ -8,30 +7,30 @@ import Transform from "../transform/Transform"
 class Stop
 {
 
+    public static BUS_ZOOM = 16
+
+
     private id: string
 
     private name: string
     private description: string
 
-    private transform: Transform
+    private type: VehicleType
 
     private position: Vector
-    private isBus: boolean
 
 
-    public constructor(navigator: Navigator, data: StopData)
+    public constructor(private transform: Transform, data: StopData)
     {
         this.id = data.id
 
         this.name = data.name
         this.description = data.description
 
-        this.transform = navigator.getTransform()
+        this.type = data.type
 
         let position = new LatLong(data.latitude, data.longitude)
         this.position = Transform.toWorld(position)
-
-        this.isBus = (data.type === VehicleType.BUS)
     }
 
 
@@ -53,23 +52,26 @@ class Stop
 
     public renderBase(c: CanvasRenderingContext2D): void
     {
-        let position = this.transform.transform(this.position)
-
-        c.beginPath()
-        c.arc(position.x, position.y, this.isBus ? 5 : 8, 0, 2 * Math.PI)
-
         c.fillStyle = "black"
-        c.fill()
+        this.drawCircle(c, this.type === VehicleType.BUS ? 5 : 8)
     }
 
     public render(c: CanvasRenderingContext2D): void
     {
+        c.fillStyle = "white"
+        this.drawCircle(c, this.type === VehicleType.BUS ? 3 : 5)
+    }
+
+    private drawCircle(c: CanvasRenderingContext2D, radius: number): void
+    {
+        let zoom = this.transform.getZoom()
+        if (zoom < Stop.BUS_ZOOM && this.type === VehicleType.BUS) return
+
         let position = this.transform.transform(this.position)
+        if (!this.transform.isVisible(position)) return
         
         c.beginPath()
-        c.arc(position.x, position.y, this.isBus ? 3 : 5, 0, 2 * Math.PI)
-        
-        c.fillStyle = "white"
+        c.arc(position.x, position.y, radius, 0, 2 * Math.PI)
         c.fill()
     }
 
