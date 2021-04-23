@@ -1,15 +1,6 @@
 import Vector from "./Vector"
 import Navigator from "../Navigator"
-
-enum Button
-{
-
-    NONE,
-
-    LEFT,
-    RIGHT
-
-}
+import Button from "./Button"
 
 class Transform
 {
@@ -22,13 +13,11 @@ class Transform
     private zoom = 0
     private scale = 1
 
-    private isMoving = false
-
     private initial!: Vector
     private initialTranslation!: Vector
 
 
-    public constructor(private navigator: Navigator, element: HTMLElement)
+    public constructor(private navigator: Navigator, private element: HTMLElement)
     {
         element.addEventListener("mousedown", this.onMouseDown.bind(this))
         element.addEventListener("mouseup", this.stopTranslation.bind(this))
@@ -36,7 +25,6 @@ class Transform
         element.addEventListener("wheel", this.onWheel.bind(this))
         
         element.addEventListener("touchstart", this.onTouchStart.bind(this))
-        element.addEventListener("touchend", this.stopTranslation.bind(this))
         element.addEventListener("touchmove", this.onTouchMove.bind(this))
     }
 
@@ -51,7 +39,7 @@ class Transform
     
     private onMouseMove(e: MouseEvent): void
     {
-        if (this.isMoving)
+        if (e.buttons === Button.LEFT)
         {
             this.translate(new Vector(e.x, e.y))
         }
@@ -87,8 +75,6 @@ class Transform
 
     private startTranslation(initial: Vector): void
     {
-        this.isMoving = true
-
         // Save initial mouse location and translation
         this.initial = initial
         this.initialTranslation = this.translation
@@ -96,11 +82,13 @@ class Transform
     
     private stopTranslation(): void
     {
-        this.isMoving = false
+        this.element.style.cursor = "default"
     }
 
     private translate(current: Vector): void
     {
+        this.element.style.cursor = "all-scroll"
+
         // Calculate new translation vector
         let translation = this.initial.sub(current).div(this.scale)
         this.translation = this.initialTranslation.add(translation)

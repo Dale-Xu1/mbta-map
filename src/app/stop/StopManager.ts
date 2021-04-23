@@ -7,6 +7,7 @@ import StopData from "../../server/data/StopData"
 import LatLong from "../transform/LatLong"
 import Vector from "../transform/Vector"
 import Transform from "../transform/Transform"
+import Button from "../transform/Button"
 
 class StopManager
 {
@@ -15,27 +16,54 @@ class StopManager
     private routes: RouteManager
     
     private stops = new Map<string, Stop>()
-
-    private drag = false
     private index = 0
+    
+    private stop: Stop | null = null
+    private drag = false
 
 
-    public constructor(private navigator: Navigator, element: HTMLElement)
+    public constructor(private navigator: Navigator, private element: HTMLElement)
     {
         this.transform = navigator.getTransform()
         this.routes = new RouteManager(navigator.getTransform())
 
-        element.addEventListener("mousedown", () => this.drag = false)
-        element.addEventListener("mousemove", () => this.drag = true)
-        element.addEventListener("mouseup", this.onClick.bind(this))
+        element.addEventListener("mousedown", this.onMouseDown.bind(this))
+        element.addEventListener("mouseup", this.onMouseUp.bind(this))
+        element.addEventListener("mousemove", this.onMouseMove.bind(this))
     }
 
-    private onClick(e: MouseEvent): void
+    private onMouseDown(): void
+    {
+        this.drag = false
+    }
+
+    private onMouseUp(): void
     {
         // Ignore click if a drag occured
         if (this.drag) return
 
         let app = this.navigator.props.app
+        if (this.stop === null)
+        {
+            app.hideSidebar()
+            return
+        }
+
+        app.showSidebar(this.stop)
+    }
+    
+    private onMouseMove(e: MouseEvent): void
+    {
+        this.drag = true
+        this.stop = this.getSelectedStop(e)
+
+        // Don't change pointer if mouse is held down
+        if (e.buttons === Button.LEFT) return
+        this.element.style.cursor = this.stop === null ? "default" : "pointer"
+    }
+
+    private getSelectedStop(e: MouseEvent): Stop | null
+    {
         let mouse = new Vector(e.offsetX, e.offsetY).sub(this.navigator.getOrigin())
         
         for (let stop of this.stops.values())
@@ -43,12 +71,11 @@ class StopManager
             // Test stops to see if one was selected
             if (stop.isSelected(mouse))
             {
-                app.showSidebar(stop)
-                return
+                return stop
             }
         }
 
-        app.hideSidebar()
+        return null
     }
 
 
