@@ -1,7 +1,6 @@
 import express, { Request, Response } from "express"
 import dotenv from "dotenv"
 import axios from "axios"
-import cors from "cors"
 
 import VehicleType from "./VehicleType"
 import StopData from "./data/StopData"
