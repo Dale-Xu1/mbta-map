@@ -94,7 +94,9 @@ class App extends React.Component<Props, State>
                                 <span>{stop.getDescription()}</span>
                             </div>
                     }
-                    {this.state.predictions === null ? "" : this.getPredictions()}
+                    <div className="predictions">
+                        {this.state.predictions === null ? "" : this.getPredictions()}
+                    </div>
                 </div>
             </div>
         )
