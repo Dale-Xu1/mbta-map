@@ -68,6 +68,8 @@ class Transform
 
     private onTouchMove(e: TouchEvent): void
     {
+        e.preventDefault()
+
         let touch = e.touches[0]
         this.translate(new Vector(touch.clientX, touch.clientY))
     }

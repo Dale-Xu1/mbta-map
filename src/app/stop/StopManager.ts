@@ -27,14 +27,9 @@ class StopManager
         this.transform = navigator.getTransform()
         this.routes = new RouteManager(navigator.getTransform())
 
-        element.addEventListener("mousedown", this.onMouseDown.bind(this))
+        element.addEventListener("mousedown", () => this.drag = false)
         element.addEventListener("mouseup", this.onMouseUp.bind(this))
         element.addEventListener("mousemove", this.onMouseMove.bind(this))
-    }
-
-    private onMouseDown(): void
-    {
-        this.drag = false
     }
 
     private onMouseUp(): void
