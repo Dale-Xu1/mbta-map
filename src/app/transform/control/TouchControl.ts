@@ -1,5 +1,4 @@
 import Transform from "../Transform"
-import Navigator from "../../Navigator"
 import Vector from "../Vector"
 
 class TouchControl

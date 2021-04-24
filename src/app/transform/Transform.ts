@@ -68,8 +68,8 @@ class Transform
     {
         let origin = this.navigator.getOrigin()
         
-        let x = vector.x > -origin.x && vector.x < origin.x
-        let y = vector.y > -origin.y && vector.y < origin.y
+        let x = (vector.x > -origin.x - Transform.MARGIN) && (vector.x < origin.x + Transform.MARGIN)
+        let y = (vector.y > -origin.y - Transform.MARGIN) && (vector.y < origin.y + Transform.MARGIN)
         
         return x && y
     }
