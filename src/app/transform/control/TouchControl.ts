@@ -1,6 +1,5 @@
 import Transform from "../Transform"
 import Vector from "../Vector"
-import Navigator from "../../Navigator"
 
 class TouchControl
 {
@@ -12,7 +11,7 @@ class TouchControl
     private initialZoom!: number
 
 
-    public constructor(private navigator: Navigator, private transform: Transform, private element: HTMLElement) // TODO: Remove navigator
+    public constructor(private transform: Transform, private element: HTMLElement)
     {
         this.onTouchStart = this.onTouchStart.bind(this)
         this.onTouchEnd = this.onTouchEnd.bind(this)
@@ -51,9 +50,16 @@ class TouchControl
         }
     }
 
-    private onTouchEnd(): void
+    private onTouchEnd(e: TouchEvent): void
     {
-        this.transform.stopTranslation()
+        if (e.touches.length === 0)
+        {
+            this.transform.stopTranslation()
+            return
+        }
+
+        // Reset initial touch point
+        this.onTouchStart(e)
     }
 
     private onTouchMove(e: TouchEvent): void

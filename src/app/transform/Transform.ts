@@ -26,7 +26,7 @@ class Transform
         element: HTMLElement
     ) {
         this.mouse = new MouseControl(navigator, this, element)
-        this.touch = new TouchControl(navigator, this, element)
+        this.touch = new TouchControl(this, element)
 
         this.scale = 2 ** zoom
     }
