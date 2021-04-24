@@ -6,10 +6,6 @@
     box-sizing: border-box;
 }
 
-html, body, #root, .app, .navigator, .map {
-    height: 100%;
-}
-
 body {
     overflow: hidden;
 }
@@ -22,14 +18,15 @@ body {
     height: 100vh;
     top: 0;
     right: -350px;
-    background-color: white;
+    background-color: #ffffff;
     font-family: Roboto, Arial, sans-serif;
-    box-shadow: 0 0 20px #b8b8b8;
-    transition: right 0.5s;
+    transition: right 0.5s, box-shadow 2s;
 }
 
 .shown {
     right: 0;
+    box-shadow: 0 0 10px #b8b8b8;
+    transition: right 0.5s, box-shadow 0.5s;
 }
 
 @media only screen and (max-device-width: 600px) {
@@ -112,6 +109,10 @@ body {
 
 .direction {
     margin-bottom: 12px;
+}
+
+html, body, #root, .app, .navigator, .map {
+    height: 100%;
 }
 
 .map {
