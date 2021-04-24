@@ -7,7 +7,7 @@ import StopData from "../../server/data/StopData"
 import LatLong from "../transform/LatLong"
 import Vector from "../transform/Vector"
 import Transform from "../transform/Transform"
-import Button from "../transform/Button"
+import Button from "../transform/control/Button"
 
 class StopManager
 {

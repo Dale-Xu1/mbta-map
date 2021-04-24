@@ -1,100 +1,109 @@
 import Vector from "./Vector"
 import Navigator from "../Navigator"
-import Button from "./Button"
+import MouseControl from "./control/MouseControl"
+import TouchControl from "./control/TouchControl"
 
 class Transform
 {
 
-    private static SPEED = 0.0016
+    private static MARGIN = 20
+
+    private static INITIAL = 0.8
+    private static DRAG = 0.93
 
 
-    private translation = Vector.ZERO
-
-    private zoom = 0
-    private scale = 1
-
-    private initial!: Vector
-    private initialTranslation!: Vector
-
-
-    public constructor(private navigator: Navigator, private element: HTMLElement)
-    {
-        element.addEventListener("mousedown", this.onMouseDown.bind(this))
-        element.addEventListener("mouseup", this.stopTranslation.bind(this))
-        element.addEventListener("mousemove", this.onMouseMove.bind(this))
-        element.addEventListener("wheel", this.onWheel.bind(this))
-        
-        element.addEventListener("touchstart", this.onTouchStart.bind(this))
-        element.addEventListener("touchmove", this.onTouchMove.bind(this))
-    }
-
-
-    private onMouseDown(e: MouseEvent): void
-    {
-        if (e.buttons === Button.LEFT)
-        {
-            this.startTranslation(new Vector(e.x, e.y))
-        }
-    }
+    private mouse: MouseControl
+    private touch: TouchControl
     
-    private onMouseMove(e: MouseEvent): void
-    {
-        if (e.buttons === Button.LEFT)
-        {
-            this.translate(new Vector(e.x, e.y))
-        }
+    private velocity = Vector.ZERO
+    private isMoving = false
+
+    private scale: number
+
+
+    public constructor(
+        private navigator: Navigator,
+        private translation: Vector,
+        private zoom: number,
+        element: HTMLElement
+    ) {
+        this.mouse = new MouseControl(navigator, this, element)
+        this.touch = new TouchControl(this, element)
+
+        this.scale = 2 ** zoom
     }
-    
-    private onWheel(e: WheelEvent): void
+
+    public unmount(): void
     {
-        let delta = e.deltaY * Transform.SPEED
+        this.mouse.unmount()
+        this.touch.unmount()
+    }
 
-        // Correct for translation so zoom happens around the cursor
-        let mouse = new Vector(e.offsetX, e.offsetY).sub(this.navigator.getOrigin())
-        let correction = mouse.mult((2 ** delta - 1) / this.scale) // Who thought algebra was actually useful?
 
-        this.translation = this.translation.sub(correction)
+    public transform(vector: Vector): Vector
+    {
+        return vector.sub(this.translation).mult(this.scale)
+    }
+
+    public getTranslation(): Vector
+    {
+        return this.translation
+    }
+
+    public setTranslation(translation: Vector): void
+    {
+        // Calculate velocity
+        this.velocity = translation.sub(this.translation).mult(Transform.INITIAL)
+        this.isMoving = true
+
+        this.translation = translation
+    }
+
+    public stopTranslation(): void
+    {
+        this.isMoving = false
+    }
+
+    public isVisible(vector: Vector): boolean
+    {
+        let origin = this.navigator.getOrigin()
         
-        this.updateZoom(this.zoom - delta)
+        let x = vector.x > -origin.x && vector.x < origin.x
+        let y = vector.y > -origin.y && vector.y < origin.y
+        
+        return x && y
+    }
+
+
+    public getZoom(): number
+    {
+        return this.zoom
+    }
+
+    public getScale(): number
+    {
+        return this.scale
+    }
+
+    public setZoom(zoom: number): void
+    {
+        // Recalculate scale
+        this.zoom = zoom
+        this.scale = 2 ** zoom
+
         this.onZoom()
     }
 
 
-    private onTouchStart(e: TouchEvent): void
+    public update(): void
     {
-        let touch = e.touches[0]
-        this.startTranslation(new Vector(touch.clientX, touch.clientY))
-    }
-
-    private onTouchMove(e: TouchEvent): void
-    {
-        e.preventDefault()
-
-        let touch = e.touches[0]
-        this.translate(new Vector(touch.clientX, touch.clientY))
-    }
-
-
-    private startTranslation(initial: Vector): void
-    {
-        // Save initial mouse location and translation
-        this.initial = initial
-        this.initialTranslation = this.translation
-    }
-    
-    private stopTranslation(): void
-    {
-        this.element.style.cursor = "default"
-    }
-
-    private translate(current: Vector): void
-    {
-        this.element.style.cursor = "all-scroll"
-
-        // Calculate new translation vector
-        let translation = this.initial.sub(current).div(this.scale)
-        this.translation = this.initialTranslation.add(translation)
-
+        if (!this.isMoving)
+        {
+            // Apply left-over velocity from translation
+            this.velocity = this.velocity.mult(Transform.DRAG)
+            this.translation = this.translation.add(this.velocity)
+        }
+        
         this.onMove()
     }
 
@@ -131,46 +140,6 @@ class Transform
     {
         let position = Navigator.toCoordinates(this.translation)
         this.navigator.refresh(position)
-    }
-
-
-    public transform(vector: Vector): Vector
-    {
-        return vector.sub(this.translation).mult(this.scale)
-    }
-
-    public setTranslation(translation: Vector): void
-    {
-        this.translation = translation
-        this.previousTranslation = translation
-    }
-
-    public isVisible(vector: Vector): boolean
-    {
-        let origin = this.navigator.getOrigin()
-        
-        let x = vector.x > -origin.x && vector.x < origin.x
-        let y = vector.y > -origin.y && vector.y < origin.y
-        
-        return x && y
-    }
-
-
-    public getZoom(): number
-    {
-        return this.zoom
-    }
-
-    public setZoom(zoom: number): void
-    {
-        this.updateZoom(zoom)
-        this.previousZoom = Math.floor(zoom)
-    }
-
-    private updateZoom(zoom: number): void
-    {
-        this.zoom = zoom
-        this.scale = 2 ** zoom
     }
 
 }

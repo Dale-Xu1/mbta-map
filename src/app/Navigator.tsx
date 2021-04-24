@@ -62,16 +62,12 @@ class Navigator extends React.Component<Props>
     {
         this.canvas = this.canvasRef.current!
         this.c = this.canvas.getContext("2d")!
-        
-        this.transform = new Transform(this, this.canvas)
-        this.stops = new StopManager(this, this.canvas)
 
         // Size canvas to window
         this.resizeCanvas = this.resizeCanvas.bind(this)
         this.resizeCanvas()
 
         window.addEventListener("resize", this.resizeCanvas)
-        this.update()
         
         // Get current location of user
         navigator.geolocation.getCurrentPosition(this.initializeMap.bind(this), this.initializeDefault.bind(this))
@@ -82,6 +78,8 @@ class Navigator extends React.Component<Props>
         // Unsubscribe event handlers
         window.removeEventListener("resize", this.resizeCanvas)
         window.cancelAnimationFrame(this.request)
+
+        this.transform.unmount()
     }
 
     private resizeCanvas(): void
@@ -111,10 +109,11 @@ class Navigator extends React.Component<Props>
         // Set transformation and fetch stops
         let translation = Navigator.toWorld(position)
 
-        this.transform.setTranslation(translation)
-        this.transform.setZoom(Navigator.ZOOM)
+        this.transform = new Transform(this, translation, Navigator.ZOOM, this.canvas)
+        this.stops = new StopManager(this, this.canvas)
 
         this.stops.refresh(position)
+        this.update()
     }
 
     
@@ -157,7 +156,9 @@ class Navigator extends React.Component<Props>
         c.save()
         c.translate(this.origin.x, this.origin.y)
 
+        this.transform.update()
         this.stops.render(c)
+
         c.restore()
     }
 
