@@ -7,16 +7,14 @@ class Transform
 {
 
     private static MARGIN = 20
-
-    private static INITIAL = 40
-    private static DRAG = 0.07
+    private static DRAG = 0.005
 
 
     private mouse: MouseControl
     private touch: TouchControl
     
     private velocity = Vector.ZERO
-    private isMoving = false
+    private initialize = false
 
     private scale: number
 
@@ -50,15 +48,19 @@ class Transform
         return this.translation
     }
 
+    private previous = this.translation
+
     public setTranslation(translation: Vector): void
     {
-        this.isMoving = true
+        this.previous = this.translation
         this.translation = translation
+
+        this.velocity = Vector.ZERO
     }
 
     public stopTranslation(): void
     {
-        this.isMoving = false
+        this.initialize = true
     }
 
     public isVisible(vector: Vector): boolean
@@ -91,26 +93,19 @@ class Transform
         this.onZoom()
     }
 
-
-    private previous = this.translation
-
+    
     public update(delta: number): void
     {
-        if (this.isMoving)
+        if (this.initialize)
         {
             // Calculate velocity
-            this.velocity = this.translation.sub(this.previous).mult(Transform.INITIAL)
-            this.previous = this.translation
+            this.velocity = this.translation.sub(this.previous).div(delta)
+            this.initialize = false
         }
-        else
-        {
-            // Calculate drag force
-            let drag = this.velocity.mult(1 - (Transform.DRAG ** delta))
-            this.velocity = this.velocity.sub(drag)
 
-            // Apply left-over velocity from translation
-            this.translation = this.translation.add(this.velocity.mult(delta))
-        }
+        // Apply left-over velocity from translation
+        this.velocity = this.velocity.mult(Transform.DRAG ** delta)
+        this.translation = this.translation.add(this.velocity.mult(delta))
         
         this.onMove()
     }

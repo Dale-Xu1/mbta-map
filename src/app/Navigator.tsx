@@ -150,7 +150,7 @@ class Navigator extends React.Component<Props>
 
 
     private previous!: number
-
+    
     private update(): void
     {
         this.request = window.requestAnimationFrame(this.update.bind(this))
