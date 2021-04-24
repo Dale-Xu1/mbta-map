@@ -12,6 +12,9 @@ import Button from "../transform/control/Button"
 class StopManager
 {
 
+    private static RADIUS = 20
+
+
     private transform: Transform
     private routes: RouteManager
     
@@ -60,17 +63,22 @@ class StopManager
     private getSelectedStop(e: MouseEvent): Stop | null
     {
         let mouse = new Vector(e.offsetX, e.offsetY).sub(this.navigator.getOrigin())
-        
+
+        let minStop: Stop | null = null
+        let minDist = Infinity
+
         for (let stop of this.stops.values())
         {
-            // Test stops to see if one was selected
-            if (stop.isSelected(mouse))
+            // Test if stop is closer
+            let dist = stop.distanceSq(mouse)
+            if (dist < minDist && dist < StopManager.RADIUS ** 2) // Must be within some radius
             {
-                return stop
+                minStop = stop
+                minDist = dist
             }
         }
 
-        return null
+        return minStop
     }
 
 

@@ -26,7 +26,7 @@ class Transform
         element: HTMLElement
     ) {
         this.mouse = new MouseControl(navigator, this, element)
-        this.touch = new TouchControl(this, element)
+        this.touch = new TouchControl(navigator, this, element)
 
         this.scale = 2 ** zoom
     }
@@ -104,8 +104,8 @@ class Transform
         }
 
         // Apply left-over velocity from translation
-        this.velocity = this.velocity.mult(Transform.DRAG ** delta)
         this.translation = this.translation.add(this.velocity.mult(delta))
+        this.velocity = this.velocity.mult(Transform.DRAG ** delta)
         
         this.onMove()
     }

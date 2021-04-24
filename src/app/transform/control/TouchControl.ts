@@ -1,5 +1,6 @@
 import Transform from "../Transform"
 import Vector from "../Vector"
+import Navigator from "../../Navigator"
 
 class TouchControl
 {
@@ -7,8 +8,11 @@ class TouchControl
     private initial!: Vector
     private initialTranslation!: Vector
 
+    private initialDist!: number
+    private initialZoom!: number
 
-    public constructor(private transform: Transform, private element: HTMLElement)
+
+    public constructor(private navigator: Navigator, private transform: Transform, private element: HTMLElement) // TODO: Remove navigator
     {
         this.onTouchStart = this.onTouchStart.bind(this)
         this.onTouchEnd = this.onTouchEnd.bind(this)
@@ -38,6 +42,13 @@ class TouchControl
 
         this.initialTranslation = translation
         this.transform.setTranslation(translation) // Update previous translation
+        
+        if (e.touches.length === 2)
+        {
+            // Initialize zoom information
+            this.initialDist = this.distance(e);
+            this.initialZoom = this.transform.getZoom()
+        }
     }
 
     private onTouchEnd(): void
@@ -54,6 +65,15 @@ class TouchControl
         let translation = this.initial.sub(position).div(this.transform.getScale())
 
         this.transform.setTranslation(this.initialTranslation.add(translation))
+
+        if (e.touches.length === 2)
+        {
+            // Calculate change in zoom based on how the distance scales
+            let scale = Math.sqrt(this.distance(e) / this.initialDist)
+            let zoom = Math.log2(scale)
+
+            this.transform.setZoom(this.initialZoom + zoom)
+        }
     }
 
 
@@ -66,6 +86,14 @@ class TouchControl
         }
 
         return average.div(e.touches.length)
+    }
+
+    private distance(e: TouchEvent): number
+    {
+        let a = new Vector(e.touches[0].clientX, e.touches[0].clientY)
+        let b = new Vector(e.touches[1].clientX, e.touches[1].clientY)
+
+        return a.sub(b).magSq()
     }
 
 }
