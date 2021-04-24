@@ -8,8 +8,8 @@ class Transform
 
     private static MARGIN = 20
 
-    private static INITIAL = 0.8
-    private static DRAG = 0.93
+    private static INITIAL = 40
+    private static DRAG = 0.07
 
 
     private mouse: MouseControl
@@ -52,10 +52,7 @@ class Transform
 
     public setTranslation(translation: Vector): void
     {
-        // Calculate velocity
-        this.velocity = translation.sub(this.translation).mult(Transform.INITIAL)
         this.isMoving = true
-
         this.translation = translation
     }
 
@@ -95,13 +92,24 @@ class Transform
     }
 
 
-    public update(): void
+    private previous = this.translation
+
+    public update(delta: number): void
     {
-        if (!this.isMoving)
+        if (this.isMoving)
         {
+            // Calculate velocity
+            this.velocity = this.translation.sub(this.previous).mult(Transform.INITIAL)
+            this.previous = this.translation
+        }
+        else
+        {
+            // Calculate drag force
+            let drag = this.velocity.mult(1 - (Transform.DRAG ** delta))
+            this.velocity = this.velocity.sub(drag)
+
             // Apply left-over velocity from translation
-            this.velocity = this.velocity.mult(Transform.DRAG)
-            this.translation = this.translation.add(this.velocity)
+            this.translation = this.translation.add(this.velocity.mult(delta))
         }
         
         this.onMove()

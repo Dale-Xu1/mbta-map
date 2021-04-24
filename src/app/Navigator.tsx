@@ -113,6 +113,8 @@ class Navigator extends React.Component<Props>
         this.stops = new StopManager(this, this.canvas)
 
         this.stops.refresh(position)
+
+        this.previous = Date.now()
         this.update()
     }
 
@@ -147,16 +149,25 @@ class Navigator extends React.Component<Props>
     }
 
 
+    private previous!: number
+
     private update(): void
     {
         this.request = window.requestAnimationFrame(this.update.bind(this))
 
+        // Accumulate time
+        let current = Date.now()
+        let elapsed = current - this.previous
+
+        this.previous = current
+
+        // Clear and center canvas
         let c = this.c
         c.clearRect(0, 0, this.canvas.width, this.canvas.height)
         c.save()
         c.translate(this.origin.x, this.origin.y)
 
-        this.transform.update()
+        this.transform.update(elapsed / 1000)
         this.stops.render(c)
 
         c.restore()
