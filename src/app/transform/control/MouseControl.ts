@@ -41,9 +41,13 @@ class MouseControl
     {
         if (e.buttons === Button.LEFT)
         {
+            let translation = this.transform.getTranslation()
+            
             // Save initial mouse location and translation
             this.initial = new Vector(e.x, e.y)
-            this.initialTranslation = this.transform.getTranslation()
+
+            this.initialTranslation = translation
+            this.transform.setTranslation(translation) // Update previous translation
         }
     }
 

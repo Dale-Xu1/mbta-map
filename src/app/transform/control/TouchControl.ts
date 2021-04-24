@@ -31,9 +31,13 @@ class TouchControl
 
     private onTouchStart(e: TouchEvent): void
     {
+        let translation = this.transform.getTranslation()
+        
         // Save initial mouse location and translation
         this.initial = this.averagePosition(e)
-        this.initialTranslation = this.transform.getTranslation()
+
+        this.initialTranslation = translation
+        this.transform.setTranslation(translation) // Update previous translation
     }
 
     private onTouchEnd(): void
