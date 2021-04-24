@@ -18,7 +18,7 @@ class Navigator extends React.Component<Props>
 
     private static SCALE = 256
 
-    private static POSITION = new LatLong(42.3528392, -71.0706818)
+    private static POSITION = new LatLong(42.356692, -71.0598287)
     private static ZOOM = 16
     
 
@@ -164,7 +164,7 @@ class Navigator extends React.Component<Props>
     public render(): React.ReactElement
     {
         return (
-            <div>
+            <div className="navigator">
                 <canvas className="map" ref={this.canvasRef}></canvas>
             </div>
         )
