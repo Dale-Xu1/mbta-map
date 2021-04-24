@@ -15,7 +15,6 @@ body {
     flex-direction: column;
     position: absolute;
     width: 350px;
-    height: 100vh;
     top: 0;
     right: -350px;
     background-color: #ffffff;
@@ -111,7 +110,7 @@ body {
     margin-bottom: 12px;
 }
 
-html, body, #root, .app, .navigator, .map {
+html, body, #root, .app, .sidebar, .navigator, .map {
     height: 100%;
 }
 
