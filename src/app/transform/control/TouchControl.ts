@@ -101,7 +101,7 @@ class TouchControl
             average = average.add(new Vector(touch.clientX, touch.clientY))
         }
 
-        return average.div(e.touches.length + 1)
+        return average.div(e.touches.length)
     }
 
     private distance(e: TouchEvent): number
