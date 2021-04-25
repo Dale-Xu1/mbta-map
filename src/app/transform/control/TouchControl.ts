@@ -43,15 +43,15 @@ class TouchControl
         this.initial = this.averagePosition(e)
 
         this.initialTranslation = translation
+        this.initialScale = this.transform.getScale()
+
         this.transform.setTranslation(translation) // Update previous translation
         
         if (e.touches.length === 2)
         {
             // Initialize zoom information
             this.initialDist = this.distance(e);
-
             this.initialZoom = this.transform.getZoom()
-            this.initialScale = this.transform.getScale()
         }
     }
 
