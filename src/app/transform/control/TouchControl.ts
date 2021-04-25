@@ -1,5 +1,6 @@
 import Transform from "../Transform"
 import Vector from "../Vector"
+import Navigator from "../../Navigator"
 
 class TouchControl
 {
@@ -8,10 +9,12 @@ class TouchControl
     private initialTranslation!: Vector
 
     private initialDist!: number
+
     private initialZoom!: number
+    private initialScale!: number
 
 
-    public constructor(private transform: Transform, private element: HTMLElement)
+    public constructor(private navigator: Navigator, private transform: Transform, private element: HTMLElement)
     {
         this.onTouchStart = this.onTouchStart.bind(this)
         this.onTouchEnd = this.onTouchEnd.bind(this)
@@ -46,7 +49,9 @@ class TouchControl
         {
             // Initialize zoom information
             this.initialDist = this.distance(e);
+
             this.initialZoom = this.transform.getZoom()
+            this.initialScale = this.transform.getScale()
         }
     }
 
@@ -68,18 +73,23 @@ class TouchControl
 
         // Calculate new translation vector
         let position = this.averagePosition(e)
-        let translation = this.initial.sub(position).div(this.transform.getScale())
-
-        this.transform.setTranslation(this.initialTranslation.add(translation))
-
+        let translation = this.initial.sub(position).div(this.initialScale)
+        
         if (e.touches.length === 2)
         {
             // Calculate change in zoom based on how the distance scales
             let scale = Math.sqrt(this.distance(e) / this.initialDist)
             let zoom = Math.log2(scale)
 
+            // Correct for shift that occurs due to zoom
+            let origin = position.sub(this.navigator.getOrigin())
+            let correction = origin.div(this.initialScale).mult(1 - (1 / scale))
+
+            translation = translation.add(correction)
             this.transform.setZoom(this.initialZoom + zoom)
         }
+
+        this.transform.setTranslation(this.initialTranslation.add(translation))
     }
 
 
@@ -91,7 +101,7 @@ class TouchControl
             average = average.add(new Vector(touch.clientX, touch.clientY))
         }
 
-        return average.div(e.touches.length)
+        return average.div(e.touches.length + 1)
     }
 
     private distance(e: TouchEvent): number

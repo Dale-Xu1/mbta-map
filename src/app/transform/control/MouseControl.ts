@@ -75,7 +75,7 @@ class MouseControl
 
         // Correct for translation so zoom happens around the cursor
         let mouse = new Vector(e.offsetX, e.offsetY).sub(this.navigator.getOrigin())
-        let correction = mouse.div(this.transform.getScale()).mult(2 ** delta - 1) // Who thought algebra was actually useful?
+        let correction = mouse.div(this.transform.getScale()).mult(2 ** delta - 1) // Who would have thought algebra was actually useful?
 
         let translation = this.transform.getTranslation()
         let zoom = this.transform.getZoom()
