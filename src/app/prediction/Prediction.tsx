@@ -60,10 +60,7 @@ class Prediction extends React.Component<Props>
 
         return (
             <div className="route" style={{ borderLeft: "10px solid " + prediction.getColor() }}>
-                <div>
-                    <h1>{prediction.getName()}</h1>
-                    <span>{prediction.getDescription()}</span>
-                </div>
+                <h1>{prediction.getName()}</h1>
                 <div className="times">
                     {
                         (inbound === null) ? "" :

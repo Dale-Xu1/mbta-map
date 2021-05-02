@@ -1,35 +1,33 @@
 import PredictionData from "../../server/data/PredictionData"
+import Time from "./Time"
 
 class RoutePrediction
 {
 
     private name: string
-    private description: string
-
     private color: string
 
     private directions: string[]
 
-    private inbound: Date[] = []
-    private outbound: Date[] = []
+    private inbound: Time[] = []
+    private outbound: Time[] = []
 
 
     public constructor(data: PredictionData)
     {
         this.name = data.name
-        this.description = data.description
 
         this.color = data.color
         this.directions = data.directions
 
         for (let time of data.inbound)
         {
-            this.inbound.push(new Date(time))
+            this.inbound.push(new Time(time))
         }
 
         for (let time of data.outbound)
         {
-            this.outbound.push(new Date(time))
+            this.outbound.push(new Time(time))
         }
     }
 
@@ -37,11 +35,6 @@ class RoutePrediction
     public getName(): string
     {
         return this.name
-    }
-
-    public getDescription(): string
-    {
-        return this.description
     }
 
     public getColor(): string
@@ -54,21 +47,13 @@ class RoutePrediction
         return this.directions
     }
 
-    
-    private format(date: Date): number
-    {
-        let difference = date.getTime() - Date.now()
-        
-        let minutes = Math.floor(difference / 60000)
-        return minutes
-    }
 
     public getInbound(): number | null
     {
         if (this.inbound.length < 1) return null
-        let result = this.format(this.inbound[0])
+        let result = this.inbound[0].formatted()
 
-        if (result <= 0)
+        if (result === null)
         {
             // Prediction has expired
             this.inbound.shift()
@@ -81,9 +66,9 @@ class RoutePrediction
     public getOutbound(): number | null
     {
         if (this.outbound.length < 1) return null
-        let result = this.format(this.outbound[0])
+        let result = this.outbound[0].formatted()
 
-        if (result <= 0)
+        if (result === null)
         {
             // Prediction has expired
             this.outbound.shift()
@@ -91,20 +76,6 @@ class RoutePrediction
         }
 
         return result
-    }
-
-
-    public add(data: any): void
-    {
-        // Remove predictions without times
-        let time = data.arrival_time === null ? data.departure_time : data.arrival_time
-        if (time === null) return
-
-        let date = new Date(time)
-        if (date.getTime() - Date.now() < 0) return // Remove if expired
-
-        if (data.direction_id === 0) this.outbound.push(date)
-        else this.inbound.push(date)
     }
 
 }
